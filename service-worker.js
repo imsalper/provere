@@ -1,9 +1,9 @@
-const CACHE_NAME = 'provere-v4';
+const CACHE_NAME = 'provere-v5';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './style.css',
-  './app.js',
+  './style.css?v=20260913_commercial_v5',
+  './app.js?v=20260913_commercial_v5',
   './manifest.json',
   './icon.png'
 ];
@@ -16,14 +16,19 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
-        keys.map((key) => caches.delete(key))
+        keys.map((key) => {
+          if (key !== CACHE_NAME) {
+            console.log('[Provere SW] Eski önbellek silindi:', key);
+            return caches.delete(key);
+          }
+        })
       );
     }).then(() => self.clients.claim())
   );
 });
 
 self.addEventListener('fetch', (event) => {
-  // Do not intercept or cache external APIs
+  // Do not intercept or cache external APIs (Google Gemini, Google Maps, etc.)
   if (event.request.url.includes('googleapis.com') || event.request.url.includes('google.com')) {
     return;
   }

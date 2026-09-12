@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20260913_4">
+  <link rel="stylesheet" href="style.css?v=20260913_commercial_v5">
 </head>
 <body>
   <div class="cyber-grid"></div>
@@ -86,8 +86,8 @@
     </div>
 
     <!-- Hidden Native File Inputs -->
-    <input type="file" id="input-photo" accept="image/*" style="display: none;" onchange="handleFileSelected(event, 'photo')">
-    <input type="file" id="input-video" accept="video/*" style="display: none;" onchange="handleFileSelected(event, 'video')">
+    <input type="file" id="input-photo" accept="image/*, .heic, .heif, .jpg, .jpeg, .png, .webp" style="display: none;">
+    <input type="file" id="input-video" accept="video/*, .mp4, .mov, .webm, .m4v" style="display: none;">
 
     <!-- Medya Yükleme & Önizleme Kartı -->
     <div class="preview-card" id="preview-card">
@@ -170,11 +170,24 @@
     </footer>
   </div>
 
-  <script src="app.js?v=20260913_4"></script>
+  <script src="app.js?v=20260913_commercial_v5"></script>
   <script>
+    // Immediate legacy cache purging to ensure fresh commercial v5 logic is active
+    if ('caches' in window) {
+      caches.keys().then((names) => {
+        names.forEach((name) => {
+          if (name !== 'provere-v5') {
+            caches.delete(name);
+          }
+        });
+      });
+    }
+
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./service-worker.js').catch(err => {
+        navigator.serviceWorker.register('./service-worker.js').then((reg) => {
+          reg.update();
+        }).catch(err => {
           console.log('SW register error:', err);
         });
       });
