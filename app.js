@@ -1,6 +1,7 @@
 // Provere Multi-Language Dictionary (7 Languages: TR, EN, ES, FR, IT, ZH, JA)
 const TRANSLATIONS = {
   tr: {
+    locationHeader: "📍 TAHMİNİ KONUM / ÇEKİM ORTAMI",
     flag: "🇹🇷",
     name: "Türkçe",
     heroTitle: "Yapay Zeka mı, Gerçek mi?",
@@ -27,6 +28,7 @@ const TRANSLATIONS = {
     signalReal3: "Sıkıştırma ve piksel yapısında yapay zeka üretimi belirtisi bulunamadı."
   },
   en: {
+    locationHeader: "📍 ESTIMATED LOCATION / ENVIRONMENT",
     flag: "🇬🇧",
     name: "English",
     heroTitle: "AI or Real Media?",
@@ -53,6 +55,7 @@ const TRANSLATIONS = {
     signalReal3: "No synthetic generative artifact patterns found in pixel compression."
   },
   es: {
+    locationHeader: "📍 UBICACIÓN ESTIMADA / ENTORNO",
     flag: "🇪🇸",
     name: "Español",
     heroTitle: "¿Inteligencia Artificial o Real?",
@@ -79,6 +82,7 @@ const TRANSLATIONS = {
     signalReal3: "No se encontraron artefactos generativos de IA en la estructura de píxeles."
   },
   fr: {
+    locationHeader: "📍 LIEU ESTIMÉ / ENVIRONNEMENT",
     flag: "🇫🇷",
     name: "Français",
     heroTitle: "Intelligence Artificielle ou Réel ?",
@@ -105,6 +109,7 @@ const TRANSLATIONS = {
     signalReal3: "Aucun artefact de génération artificielle détecté dans les pixels."
   },
   it: {
+    locationHeader: "📍 POSIZIONE STIMATA / AMBIENTE",
     flag: "🇮🇹",
     name: "Italiano",
     heroTitle: "Intelligenza Artificiale o Reale?",
@@ -131,6 +136,7 @@ const TRANSLATIONS = {
     signalReal3: "Nessun artefatto tipico dell'IA riscontrato nella struttura dei pixel."
   },
   zh: {
+    locationHeader: "📍 预估拍摄地点 / 环境",
     flag: "🇨🇳",
     name: "中文",
     heroTitle: "AI 生成还是真实拍摄？",
@@ -157,6 +163,7 @@ const TRANSLATIONS = {
     signalReal3: "像素压缩结构中未发现任何人工智能生成算法痕迹。"
   },
   ja: {
+    locationHeader: "📍 推定撮影場所 / 環境",
     flag: "🇯🇵",
     name: "日本語",
     heroTitle: "AI生成か、本物か？",
@@ -221,6 +228,7 @@ function setLanguage(langKey) {
   document.getElementById('t-upload-sub').textContent = t.uploadSub;
   document.getElementById('t-btn-check').textContent = t.btnCheck;
   document.getElementById('t-ai-score-label').textContent = t.aiScoreLabel;
+  const locHeader = document.getElementById('t-location-header'); if (locHeader && t.locationHeader) locHeader.textContent = t.locationHeader;
 
   // Close Lang Dropdown
   document.getElementById('lang-menu').classList.remove('open');
@@ -493,10 +501,11 @@ Sana verilen görseli piksel, doku, aydınlatma, nesne simetrisi ve parazit aç�
   "headline": "Doğal Ekran Görüntüsü / Çekim",
   "badge": "GERÇEK / EKRAN GÖRÜNTÜSÜ",
   "signals": [
-    "Ekran pikselleri ve kullanıcı arayüzü öğeleri doğal dijital render yapısına sahip.",
-    "Herhangi bir difüzyon modeli (Midjourney/Flux) sentetik yüzey izi bulunamadı.",
-    "Yazıtipleri ve vektörel kenarlar yapay zeka paraziti içermiyor."
-  ]
+    "Arayüz ögeleri ve macOS bileşenleri standart dijital render özellikleri taşımaktadır.",
+    "Metinler ve simgeler vektörel netliktedir, sentetik bozulma içermez.",
+    "GenAI difüzyon modellerine özgü piksel tutarsızlıkları bulunmamaktadır."
+  ],
+  "location": "Görselin çekildiği şehir/ülke veya ait olduğu ortam (Örn: 'İstanbul, Türkiye - Dış Mekan', 'Apple macOS Masaüstü Arayüzü', 'İç Mekan Stüdyo Çekimi' vb.)"
 }
 
 (Not: headline, badge ve signals maddelerini kullanıcının seçtiği dil olan '${currentLang}' dilinde yaz!).
@@ -557,6 +566,16 @@ function renderRealVerificationResult(data) {
       <span>${escapeHtml(sig)}</span>
     </div>
   `).join('');
+
+  // Konum / Çekim Ortamı Gösterimi
+  const locBox = document.getElementById('location-box');
+  const locDesc = document.getElementById('location-desc');
+  if (data.location && locBox && locDesc) {
+    locDesc.textContent = data.location;
+    locBox.style.display = 'flex';
+  } else if (locBox) {
+    locBox.style.display = 'none';
+  }
 
   resultCard.style.display = 'flex';
   resultCard.scrollIntoView({ behavior: 'smooth' });
