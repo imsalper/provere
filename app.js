@@ -586,12 +586,17 @@ Sana verilen görseli piksel, doku, aydınlatma, nesne simetrisi ve parazit aç�
     "Metinler ve simgeler vektörel netliktedir, sentetik bozulma içermez.",
     "GenAI difüzyon modellerine özgü piksel tutarsızlıkları bulunmamaktadır."
   ],
-  "location": "Görselin çekildiği şehir/ülke/mekan veya ait olduğu ortam (Örn: 'Sultanahmet Camii, Fatih / İstanbul' veya 'Apple macOS Masaüstü Arayüzü')",
-  "latitude": 41.0054,
-  "longitude": 28.9768
+  "location": "Görselin çekildiği şehir/ülke/mekan veya 'Konum verisi bulunamadı'",
+  "latitude": null,
+  "longitude": null
 }
 
-(Not: headline, badge ve signals maddelerini kullanıcının seçtiği dil olan '${currentLang}' dilinde yaz!).
+KRİTİK KONUM VE KOORDİNAT KURALI:
+- Fotoğrafta dünyaca bilinen kesin bir coğrafi yapı (ör. Eyfel Kulesi, Boğaziçi Köprüsü vb.) yoksa latitude ve longitude değerlerini KESİNLİKLE null ver! Kafadan uydurma koordinat üretme.
+- Eğer görsel iç mekan, stüdyo, dijital ekran görüntüsü veya genel bir nesne ise: location alanına 'Konum verisi bulunamadı' veya ortam adını yaz ve koordinatları null bırak.
+- Sadece fotoğrafta net ve açık bir coğrafi mekan tespit edebiliyorsan 'location' alanına '(Yaklaşık/Muhtemel)' ibaresiyle belirt.
+
+(Not: headline, badge, signals ve location maddelerini kullanıcının seçtiği dil olan '${currentLang}' dilinde yaz!).
 verdict_type değeri yapay zeka için "ai", gerçek/ekran görüntüsü için "real" olmalıdır.`;
 
   try {
@@ -657,35 +662,77 @@ function renderRealVerificationResult(data) {
     </div>
   `).join('');
 
-  // Konum, Koordinat & Haritaya Git Gösterimi
+  // Konum, Koordinat & Haritaya Git Gösterimi (Dürüst & Şeffaf Doğrulama Katmanı)
   const locBox = document.getElementById('location-box');
+  const locHeader = document.getElementById('t-location-header');
   const locDesc = document.getElementById('location-desc');
   const locCoords = document.getElementById('location-coords');
   const btnOpenMap = document.getElementById('btn-open-map');
 
-  if (data.location && locBox && locDesc) {
-    locDesc.textContent = data.location;
+  if (locBox && locDesc) {
     locBox.style.display = 'flex';
 
-    // Enlem & Boylam Koordinat Kontrolü
-    const lat = parseFloat(data.latitude);
-    const lng = parseFloat(data.longitude);
-    const hasValidCoords = !isNaN(lat) && !isNaN(lng) && (lat !== 0 || lng !== 0);
-
-    if (hasValidCoords && locCoords && btnOpenMap) {
+    // Durum 1: Gerçek Donanımsal Kamera EXIF GPS Verisi Mevcut
+    if (data.isExifGps && data.latitude && data.longitude) {
+      const lat = parseFloat(data.latitude);
+      const lng = parseFloat(data.longitude);
       const latCard = lat >= 0 ? `${lat.toFixed(4)}° K` : `${Math.abs(lat).toFixed(4)}° G`;
       const lngCard = lng >= 0 ? `${lng.toFixed(4)}° D` : `${Math.abs(lng).toFixed(4)}° B`;
-      const gpsSourceBadge = data.isExifGps ? ' [Kamera GPS]' : '';
-      
-      locCoords.textContent = `${latCard}, ${lngCard}${gpsSourceBadge}`;
-      locCoords.style.display = 'flex';
 
-      // Google Maps & Apple Maps Doğrudan Navigasyon Linki
-      btnOpenMap.href = `https://www.google.com/maps?q=${lat},${lng}`;
-      btnOpenMap.style.display = 'inline-flex';
-    } else {
-      if (locCoords) locCoords.style.display = 'none';
-      if (btnOpenMap) btnOpenMap.style.display = 'none';
+      if (locHeader) locHeader.textContent = "📍 KESİN KONUM (Kamera EXIF GPS Verisi)";
+      locDesc.textContent = (data.location && !data.location.toLowerCase().includes("bulunamadı")) ? data.location : "Kamera Donanım GPS Kaydı";
+
+      if (locCoords) {
+        locCoords.innerHTML = `<span class="badge-exif-verified">✓ KESİN GPS:</span> <span>${latCard}, ${lngCard}</span>`;
+        locCoords.style.display = 'flex';
+      }
+
+      if (btnOpenMap) {
+        btnOpenMap.href = `https://www.google.com/maps?q=${lat},${lng}`;
+        btnOpenMap.style.display = 'inline-flex';
+        const mapText = document.getElementById('t-open-map');
+        if (mapText) mapText.textContent = "Haritada Gör";
+      }
+    }
+    // Durum 2: Gerçek EXIF GPS Yok, Ancak Görsel İçeriğinden Tahmin Edilen Belirgin Bir Mekan/Bölge Var
+    else if (data.location && !data.location.toLowerCase().includes("bulunamadı") && data.location.trim().length > 3) {
+      if (locHeader) locHeader.textContent = "📍 TAHMİNİ MEKAN / ORTAM (Görsel Analizi)";
+      locDesc.textContent = data.location;
+
+      const lat = parseFloat(data.latitude);
+      const lng = parseFloat(data.longitude);
+      const hasApproxCoords = !isNaN(lat) && !isNaN(lng) && (lat !== 0 || lng !== 0);
+
+      if (hasApproxCoords && locCoords) {
+        const latCard = lat >= 0 ? `${lat.toFixed(3)}° K` : `${Math.abs(lat).toFixed(3)}° G`;
+        const lngCard = lng >= 0 ? `${lng.toFixed(3)}° D` : `${Math.abs(lng).toFixed(3)}° B`;
+        locCoords.innerHTML = `<span class="badge-approx-coord">⚠️ YAKLAŞIK / MUHTEMEL:</span> <span>${latCard}, ${lngCard} (EXIF GPS Yok)</span>`;
+        locCoords.style.display = 'flex';
+      } else if (locCoords) {
+        locCoords.innerHTML = `<span style="color: var(--text-muted); font-size: 11.5px;">ℹ️ Kesin koordinat: Gerçek EXIF GPS verisi bulunamadı.</span>`;
+        locCoords.style.display = 'flex';
+      }
+
+      if (btnOpenMap) {
+        btnOpenMap.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data.location)}`;
+        btnOpenMap.style.display = 'inline-flex';
+        const mapText = document.getElementById('t-open-map');
+        if (mapText) mapText.textContent = "Bölgeyi Ara";
+      }
+    }
+    // Durum 3: Gerçek EXIF Verisi Yok ve Belirgin Bir Mekan İzi Bulunmuyor
+    else {
+      if (locHeader) locHeader.textContent = "📍 KONUM BİLGİSİ DURUMU";
+      locDesc.innerHTML = `<span style="color: var(--text-secondary); font-weight: 500;">Konum verisi bulunamadı</span>`;
+      
+      if (locCoords) {
+        locCoords.innerHTML = `<span style="color: var(--text-muted); font-size: 11.5px;">Fotoğraf dosyasında donanımsal GPS etiketi bulunamadı ve belirgin bir coğrafi referans içermiyor.</span>`;
+        locCoords.style.display = 'flex';
+      }
+
+      if (btnOpenMap) {
+        btnOpenMap.style.display = 'none';
+      }
     }
   } else if (locBox) {
     locBox.style.display = 'none';
