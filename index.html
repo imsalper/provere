@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20260913_commercial_v6">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="cyber-grid"></div>
@@ -156,25 +156,19 @@
     </footer>
   </div>
 
-  <script src="app.js?v=20260913_commercial_v6"></script>
+  <script src="app.js"></script>
   <script>
-    if ('caches' in window) {
-      caches.keys().then((names) => {
-        names.forEach((name) => {
-          if (name !== 'provere-v6') {
-            caches.delete(name);
-          }
-        });
+    // Mevcut service worker kayıtlarını ve cache'leri temizle
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (const registration of registrations) {
+          registration.unregister();
+        }
       });
     }
-
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./service-worker.js').then((reg) => {
-          reg.update();
-        }).catch(err => {
-          console.log('SW register error:', err);
-        });
+    if ('caches' in window) {
+      caches.keys().then((keys) => {
+        keys.forEach((key) => caches.delete(key));
       });
     }
   </script>
