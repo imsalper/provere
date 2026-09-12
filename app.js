@@ -1,5 +1,6 @@
 // Provere — AI vs Real Media Forensics Engine
 // Sürüm: 2026.09.13 (Ticari Seviye Adli Bilişim & Donanım Doğrulama Motoru)
+// GÜNCELLEME: API anahtarı artık istemcide değil, Cloudflare Worker proxy'sinde saklanıyor.
 
 // Multi-Language Dictionary (7 Languages: TR, EN, ES, FR, IT, ZH, JA)
 const TRANSLATIONS = {
@@ -682,8 +683,13 @@ async function analyzeForensicContainer(file) {
   return result;
 }
 
-// Google Gemini API Gateway (Production Failover Protocol)
-const EMBEDDED_API_KEY = atob("QVEuQWI4Uk42STg5WWROUTZpTy16SmYzUVdNTlNid3hHdWJqVmtXMXM0WGlMcUZ3WmpWQmc=");
+// ---------------------------------------------------------------------------
+// Google Gemini API Gateway — Cloudflare Worker Proxy Üzerinden (Production)
+// API anahtarı ARTIK bu dosyada YOK. Anahtar sadece Cloudflare Worker'ın
+// şifrelenmiş "Secret" değişkeninde duruyor. Bu sayede tarayıcı üzerinden
+// (view-source, DevTools, Network sekmesi) hiç kimse anahtarı göremez.
+// ---------------------------------------------------------------------------
+const PROXY_URL = "https://provere-proxy.imsalper.workers.dev/";
 
 async function callGeminiVision(base64Data, mimeType, prompt) {
   const models = [
@@ -700,8 +706,8 @@ async function callGeminiVision(base64Data, mimeType, prompt) {
 
   for (const model of models) {
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(EMBEDDED_API_KEY)}`;
       const body = {
+        model: model,
         contents: [
           {
             role: "user",
@@ -722,7 +728,7 @@ async function callGeminiVision(base64Data, mimeType, prompt) {
         }
       };
 
-      const res = await fetch(url, {
+      const res = await fetch(PROXY_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body)
