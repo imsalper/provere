@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Provere — AI vs Real Media Detector</title>
+  <meta name="description" content="Fotoğraf ve videoların yapay zeka tarafından mı üretildiğini yoksa gerçek mi olduğunu tespit eden doğrulama aracı.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="cyber-grid"></div>
+
+  <div class="app-container">
+    <!-- Header -->
+    <header>
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </div>
+        <div>
+          <span class="brand-name">Provere</span>
+          <span class="badge-ai">AI DETECT</span>
+        </div>
+      </div>
+
+      <!-- Language Selector Dropdown (7 Languages) -->
+      <div class="lang-dropdown-wrapper">
+        <button id="lang-toggle-btn" class="lang-btn" onclick="toggleLangMenu()">
+          <span id="current-lang-flag">🇹🇷</span>
+          <span id="current-lang-name">Türkçe</span>
+          <span style="font-size: 10px; opacity: 0.6;">▼</span>
+        </button>
+        <div id="lang-menu" class="lang-menu">
+          <button class="lang-item active" onclick="setLanguage('tr')"><span>🇹🇷</span> Türkçe</button>
+          <button class="lang-item" onclick="setLanguage('en')"><span>🇬🇧</span> English</button>
+          <button class="lang-item" onclick="setLanguage('es')"><span>🇪🇸</span> Español</button>
+          <button class="lang-item" onclick="setLanguage('fr')"><span>🇫🇷</span> Français</button>
+          <button class="lang-item" onclick="setLanguage('it')"><span>🇮🇹</span> Italiano</button>
+          <button class="lang-item" onclick="setLanguage('zh')"><span>🇨🇳</span> 中文</button>
+          <button class="lang-item" onclick="setLanguage('ja')"><span>🇯🇵</span> 日本語</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Hero Title -->
+    <div class="hero-title">
+      <h1 id="t-hero-title">Yapay Zeka mı, Gerçek mi?</h1>
+      <p id="t-hero-desc">Fotoğraf veya video yükleyin; pikselleri, mimikleri ve yapay zeka izlerini saniyeler içinde doğrulayın.</p>
+    </div>
+
+    <!-- 2 GÖZ ALICI 3D TUŞ: FOTOĞRAF & VİDEO -->
+    <div class="buttons-grid">
+      <!-- 1. Fotoğraf Butonu -->
+      <button class="btn-3d btn-photo active" id="mode-photo-btn" onclick="selectMode('photo')">
+        <span class="btn-3d-shadow"></span>
+        <span class="btn-3d-edge"></span>
+        <span class="btn-3d-front">
+          <div class="btn-icon-wrapper">
+            <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          </div>
+          <span id="t-btn-photo">FOTOĞRAF</span>
+          <span class="btn-sub-label" id="t-sub-photo">JPG, PNG, WEBP</span>
+        </span>
+      </button>
+
+      <!-- 2. Video Butonu -->
+      <button class="btn-3d btn-video" id="mode-video-btn" onclick="selectMode('video')">
+        <span class="btn-3d-shadow"></span>
+        <span class="btn-3d-edge"></span>
+        <span class="btn-3d-front">
+          <div class="btn-icon-wrapper">
+            <svg viewBox="0 0 24 24" fill="none"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+          </div>
+          <span id="t-btn-video">VİDEO</span>
+          <span class="btn-sub-label" id="t-sub-video">MP4, MOV, WEBM</span>
+        </span>
+      </button>
+    </div>
+
+    <!-- Hidden Native File Inputs -->
+    <input type="file" id="input-photo" accept="image/*" style="display: none;" onchange="handleFileSelected(event, 'photo')">
+    <input type="file" id="input-video" accept="video/*" style="display: none;" onchange="handleFileSelected(event, 'video')">
+
+    <!-- Medya Yükleme & Önizleme Kartı -->
+    <div class="preview-card" id="preview-card">
+      <div class="scan-laser-line" id="scan-laser"></div>
+
+      <!-- Yükleme Bekleme Durumu (Boşken) -->
+      <div class="upload-placeholder" id="upload-placeholder" onclick="triggerFilePicker()">
+        <div class="upload-icon-circle">
+          <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <div>
+          <div style="font-weight: 700; font-size: 15px; margin-bottom: 4px;" id="t-upload-title">Medyayı Seçmek İçin Dokunun</div>
+          <div style="font-size: 12px; color: var(--text-muted);" id="t-upload-sub">veya dosyayı buraya sürükleyip bırakın</div>
+        </div>
+      </div>
+
+      <!-- Medya Önizleme Alanı (Dosya Seçilince) -->
+      <div class="media-preview-container" id="media-preview-container">
+        <button class="remove-media-btn" onclick="clearSelectedMedia(event)" title="Kaldır">✕</button>
+        <img id="img-preview" class="preview-element" alt="Önizleme" style="display: none;">
+        <video id="video-preview" class="preview-element" controls playsinline style="display: none;"></video>
+        <div id="media-info-text" style="font-size: 12px; color: var(--text-muted); margin-top: 10px;"></div>
+      </div>
+    </div>
+
+    <!-- 3D BÜYÜK KONTROL ET TUŞU -->
+    <button class="btn-control-3d" id="btn-control" onclick="startAnalysis()" disabled>
+      <span class="btn-control-edge"></span>
+      <span class="btn-control-front">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span id="t-btn-check">KONTROL ET</span>
+      </span>
+    </button>
+
+    <!-- SONUÇ & RAPOR KARTI -->
+    <div class="result-card" id="result-card">
+      <div class="result-meter">
+        <svg class="meter-circle" width="140" height="140">
+          <circle class="meter-circle-bg" cx="70" cy="70" r="60"/>
+          <circle id="meter-circle-bar" class="meter-circle-bar" cx="70" cy="70" r="60"/>
+        </svg>
+        <div class="result-percentage">
+          <span id="score-val">0%</span>
+          <span class="result-label" id="t-ai-score-label">AI OLASILIĞI</span>
+        </div>
+      </div>
+
+      <div id="verdict-wrapper" class="is-ai">
+        <div class="verdict-title" id="verdict-title">Yapay Zeka Tarafından Üretildi</div>
+        <div class="verdict-badge" id="verdict-badge">SENTETİK GÖRSEL (AI)</div>
+      </div>
+
+      <!-- İnceleme Bulguları / Sinyaller -->
+      <div class="signals-list" id="signals-list">
+        <!-- Dinamik olarak JS tarafından doldurulacak -->
+      </div>
+    </div>
+
+    <footer>
+      <span>Provere AI Engine • 2026</span>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
