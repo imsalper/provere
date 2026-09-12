@@ -1,6 +1,9 @@
 // Provere — AI vs Real Media Forensics Engine
 // Sürüm: 2026.09.13 (Ticari Seviye Adli Bilişim & Donanım Doğrulama Motoru)
-// GÜNCELLEME: API anahtarı artık istemcide değil, Cloudflare Worker proxy'sinde saklanıyor.
+// GÜNCELLEME 1: API anahtarı artık istemcide değil, Cloudflare Worker proxy'sinde saklanıyor.
+// GÜNCELLEME 2: Eksik triggerFilePicker() fonksiyonu eklendi (mobilde dosya seçme çalışmıyordu).
+// GÜNCELLEME 3: setLanguage() içindeki yanlış element ID düzeltildi (t-score-label -> t-ai-score-label),
+//               bu hata sayfa açılışında tüm olay dinleyicilerinin (event listener) kurulmasını engelliyordu.
 
 // Multi-Language Dictionary (7 Languages: TR, EN, ES, FR, IT, ZH, JA)
 const TRANSLATIONS = {
@@ -197,6 +200,15 @@ document.addEventListener('DOMContentLoaded', () => {
   setupDragAndDrop();
 });
 
+// Açık dosya seçici (HTML'deki upload-placeholder onclick="triggerFilePicker()" burayı çağırıyor)
+function triggerFilePicker() {
+  if (currentMode === 'video') {
+    document.getElementById('input-video').click();
+  } else {
+    document.getElementById('input-photo').click();
+  }
+}
+
 // Setup Events
 function setupEventListeners() {
   const btnPhoto = document.getElementById('mode-photo-btn') || document.getElementById('mode-photo');
@@ -216,8 +228,11 @@ function setupEventListeners() {
     }
   });
 
-  document.getElementById('btn-clear').addEventListener('click', clearSelectedMedia);
-  document.getElementById('btn-control').addEventListener('click', startAnalysis);
+  const btnClear = document.getElementById('btn-clear');
+  if (btnClear) btnClear.addEventListener('click', clearSelectedMedia);
+
+  const btnControl = document.getElementById('btn-control');
+  if (btnControl) btnControl.addEventListener('click', startAnalysis);
 
   document.addEventListener('click', (e) => {
     const dropdown = document.querySelector('.lang-dropdown-wrapper');
@@ -255,23 +270,30 @@ function setLanguage(lang) {
   localStorage.setItem('provere_lang', lang);
 
   const t = TRANSLATIONS[lang];
-  document.getElementById('current-lang-flag').textContent = t.flag;
-  document.getElementById('current-lang-name').textContent = t.name;
+  const setText = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  };
+
+  setText('current-lang-flag', t.flag);
+  setText('current-lang-name', t.name);
 
   document.querySelectorAll('.lang-item').forEach(item => {
     item.classList.toggle('active', item.getAttribute('onclick').includes(`'${lang}'`));
   });
 
-  document.getElementById('t-hero-title').textContent = t.heroTitle;
-  document.getElementById('t-hero-desc').textContent = t.heroDesc;
-  document.getElementById('t-btn-photo').textContent = t.btnPhoto;
-  document.getElementById('t-sub-photo').textContent = t.subPhoto;
-  document.getElementById('t-btn-video').textContent = t.btnVideo;
-  document.getElementById('t-sub-video').textContent = t.subVideo;
-  document.getElementById('t-upload-title').textContent = t.uploadTitle;
-  document.getElementById('t-upload-sub').textContent = t.uploadSub;
-  document.getElementById('t-btn-check').textContent = t.btnCheck;
-  document.getElementById('t-score-label').textContent = t.aiScoreLabel;
+  setText('t-hero-title', t.heroTitle);
+  setText('t-hero-desc', t.heroDesc);
+  setText('t-btn-photo', t.btnPhoto);
+  setText('t-sub-photo', t.subPhoto);
+  setText('t-btn-video', t.btnVideo);
+  setText('t-sub-video', t.subVideo);
+  setText('t-upload-title', t.uploadTitle);
+  setText('t-upload-sub', t.uploadSub);
+  setText('t-btn-check', t.btnCheck);
+  setText('t-ai-score-label', t.aiScoreLabel);
+  setText('t-location-header', t.locationHeader);
+  setText('t-open-map', t.openMap);
 
   const menu = document.getElementById('lang-menu');
   if (menu) menu.classList.remove('show');
@@ -311,32 +333,38 @@ function handleFileSelect(file) {
 
   // Format file size
   const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
-  mediaFilename.textContent = file.name;
-  mediaFilesize.textContent = `${sizeMb} MB`;
+  if (mediaFilename) mediaFilename.textContent = file.name;
+  if (mediaFilesize) mediaFilesize.textContent = `${sizeMb} MB`;
 
-  uploadPlaceholder.style.display = 'none';
-  previewContainer.style.display = 'block';
-  previewCard.classList.add('has-file');
-  resultCard.style.display = 'none';
+  if (uploadPlaceholder) uploadPlaceholder.style.display = 'none';
+  if (previewContainer) previewContainer.style.display = 'block';
+  if (previewCard) previewCard.classList.add('has-file');
+  if (resultCard) resultCard.style.display = 'none';
 
   const isVideo = file.type.startsWith('video/') || file.name.match(/\.(mp4|mov|webm|m4v)$/i);
 
   if (!isVideo) {
-    videoPreview.style.display = 'none';
-    imgPreview.style.display = 'block';
-    imgPreview.src = selectedFileObjectUrl;
-    checkBtn.disabled = false;
+    if (videoPreview) videoPreview.style.display = 'none';
+    if (imgPreview) {
+      imgPreview.style.display = 'block';
+      imgPreview.src = selectedFileObjectUrl;
+    }
+    if (checkBtn) checkBtn.disabled = false;
   } else {
-    imgPreview.style.display = 'none';
-    videoPreview.style.display = 'block';
-    videoPreview.src = selectedFileObjectUrl;
-    checkBtn.disabled = false;
+    if (imgPreview) imgPreview.style.display = 'none';
+    if (videoPreview) {
+      videoPreview.style.display = 'block';
+      videoPreview.src = selectedFileObjectUrl;
+    }
+    if (checkBtn) checkBtn.disabled = false;
   }
 }
 
 // Drag & Drop
 function setupDragAndDrop() {
   const card = document.getElementById('preview-card');
+  if (!card) return;
+
   ['dragenter', 'dragover'].forEach(name => {
     card.addEventListener(name, (e) => {
       e.preventDefault();
@@ -384,13 +412,13 @@ function clearSelectedMedia(e) {
   const checkBtn = document.getElementById('btn-control');
   const resultCard = document.getElementById('result-card');
 
-  imgPreview.src = '';
-  videoPreview.src = '';
-  uploadPlaceholder.style.display = 'flex';
-  previewContainer.style.display = 'none';
-  previewCard.classList.remove('has-file');
-  checkBtn.disabled = true;
-  resultCard.style.display = 'none';
+  if (imgPreview) imgPreview.src = '';
+  if (videoPreview) videoPreview.src = '';
+  if (uploadPlaceholder) uploadPlaceholder.style.display = 'flex';
+  if (previewContainer) previewContainer.style.display = 'none';
+  if (previewCard) previewCard.classList.remove('has-file');
+  if (checkBtn) checkBtn.disabled = true;
+  if (resultCard) resultCard.style.display = 'none';
 }
 
 // Extract Video Frame for Analysis
@@ -686,8 +714,7 @@ async function analyzeForensicContainer(file) {
 // ---------------------------------------------------------------------------
 // Google Gemini API Gateway — Cloudflare Worker Proxy Üzerinden (Production)
 // API anahtarı ARTIK bu dosyada YOK. Anahtar sadece Cloudflare Worker'ın
-// şifrelenmiş "Secret" değişkeninde duruyor. Bu sayede tarayıcı üzerinden
-// (view-source, DevTools, Network sekmesi) hiç kimse anahtarı göremez.
+// şifrelenmiş "Secret" değişkeninde duruyor.
 // ---------------------------------------------------------------------------
 const PROXY_URL = "https://provere-proxy.imsalper.workers.dev/";
 
