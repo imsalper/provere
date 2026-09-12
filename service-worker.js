@@ -1,9 +1,9 @@
-const CACHE_NAME = 'provere-v5';
+const CACHE_NAME = 'provere-v6';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './style.css?v=20260913_commercial_v5',
-  './app.js?v=20260913_commercial_v5',
+  './style.css?v=20260913_commercial_v6',
+  './app.js?v=20260913_commercial_v6',
   './manifest.json',
   './icon.png'
 ];
@@ -28,14 +28,12 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Do not intercept or cache external APIs (Google Gemini, Google Maps, etc.)
-  if (event.request.url.includes('googleapis.com') || event.request.url.includes('google.com')) {
+  if (event.request.url.includes('googleapis.com') || event.request.url.includes('google.com') || event.request.url.includes('workers.dev')) {
     return;
   }
 
-  // Network-First strategy: Always fetch fresh code, fallback to cache only if completely offline
   event.respondWith(
-    fetch(event.request)
+    fetch(event.request, { cache: 'no-store' })
       .then((networkResponse) => {
         if (networkResponse && networkResponse.status === 200 && event.request.method === 'GET') {
           const responseClone = networkResponse.clone();
