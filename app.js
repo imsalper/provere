@@ -1,6 +1,7 @@
 // Provere Multi-Language Dictionary (7 Languages: TR, EN, ES, FR, IT, ZH, JA)
 const TRANSLATIONS = {
   tr: {
+    openMap: "Haritada Gör",
     locationHeader: "📍 TAHMİNİ KONUM / ÇEKİM ORTAMI",
     flag: "🇹🇷",
     name: "Türkçe",
@@ -28,6 +29,7 @@ const TRANSLATIONS = {
     signalReal3: "Sıkıştırma ve piksel yapısında yapay zeka üretimi belirtisi bulunamadı."
   },
   en: {
+    openMap: "View on Map",
     locationHeader: "📍 ESTIMATED LOCATION / ENVIRONMENT",
     flag: "🇬🇧",
     name: "English",
@@ -55,6 +57,7 @@ const TRANSLATIONS = {
     signalReal3: "No synthetic generative artifact patterns found in pixel compression."
   },
   es: {
+    openMap: "Ver en Mapa",
     locationHeader: "📍 UBICACIÓN ESTIMADA / ENTORNO",
     flag: "🇪🇸",
     name: "Español",
@@ -82,6 +85,7 @@ const TRANSLATIONS = {
     signalReal3: "No se encontraron artefactos generativos de IA en la estructura de píxeles."
   },
   fr: {
+    openMap: "Voir sur la Carte",
     locationHeader: "📍 LIEU ESTIMÉ / ENVIRONNEMENT",
     flag: "🇫🇷",
     name: "Français",
@@ -109,6 +113,7 @@ const TRANSLATIONS = {
     signalReal3: "Aucun artefact de génération artificielle détecté dans les pixels."
   },
   it: {
+    openMap: "Vedi su Mappa",
     locationHeader: "📍 POSIZIONE STIMATA / AMBIENTE",
     flag: "🇮🇹",
     name: "Italiano",
@@ -136,6 +141,7 @@ const TRANSLATIONS = {
     signalReal3: "Nessun artefatto tipico dell'IA riscontrato nella struttura dei pixel."
   },
   zh: {
+    openMap: "在地图上查看",
     locationHeader: "📍 预估拍摄地点 / 环境",
     flag: "🇨🇳",
     name: "中文",
@@ -163,6 +169,7 @@ const TRANSLATIONS = {
     signalReal3: "像素压缩结构中未发现任何人工智能生成算法痕迹。"
   },
   ja: {
+    openMap: "地図で見る",
     locationHeader: "📍 推定撮影場所 / 環境",
     flag: "🇯🇵",
     name: "日本語",
@@ -229,6 +236,7 @@ function setLanguage(langKey) {
   document.getElementById('t-btn-check').textContent = t.btnCheck;
   document.getElementById('t-ai-score-label').textContent = t.aiScoreLabel;
   const locHeader = document.getElementById('t-location-header'); if (locHeader && t.locationHeader) locHeader.textContent = t.locationHeader;
+  const mapBtnText = document.getElementById('t-open-map'); if (mapBtnText && t.openMap) mapBtnText.textContent = t.openMap;
 
   // Close Lang Dropdown
   document.getElementById('lang-menu').classList.remove('open');
@@ -444,6 +452,79 @@ async function callGeminiVision(base64Data, mimeType, prompt) {
   throw lastErr || new Error("Gemini API yanıt vermedi.");
 }
 
+
+// Native Client-side EXIF GPS Parser
+async function extractExifGps(file) {
+  if (!file || !file.type.includes('jpeg') && !file.name.toLowerCase().endsWith('.jpg') && !file.name.toLowerCase().endsWith('.jpeg')) {
+    return null;
+  }
+  try {
+    const buffer = await file.slice(0, 128 * 1024).arrayBuffer();
+    const view = new DataView(buffer);
+    if (view.getUint16(0, false) !== 0xFFD8) return null;
+
+    let offset = 2;
+    const length = view.byteLength;
+    while (offset < length - 4) {
+      if (view.getUint8(offset) !== 0xFF) return null;
+      const marker = view.getUint8(offset + 1);
+      if (marker === 0xE1) {
+        const exifOffset = offset + 4;
+        if (view.getUint32(exifOffset, false) !== 0x45786966) return null;
+        const tiffOffset = exifOffset + 6;
+        const bigEndian = view.getUint16(tiffOffset, false) === 0x4D4D;
+        const ifdOffset = view.getUint32(tiffOffset + 4, bigEndian);
+
+        let cur = tiffOffset + ifdOffset;
+        const entries = view.getUint16(cur, bigEndian);
+        cur += 2;
+        let gpsOffset = null;
+        for (let i = 0; i < entries; i++) {
+          const tag = view.getUint16(cur + i * 12, bigEndian);
+          if (tag === 0x8825) {
+            gpsOffset = view.getUint32(cur + i * 12 + 8, bigEndian);
+            break;
+          }
+        }
+        if (!gpsOffset) return null;
+
+        const gpsCur = tiffOffset + gpsOffset;
+        const gpsEntries = view.getUint16(gpsCur, bigEndian);
+        let latRef = 'N', lonRef = 'E';
+        let latVal = null, lonVal = null;
+
+        const readCoord = (valOffset) => {
+          const o = tiffOffset + valOffset;
+          const deg = view.getUint32(o, bigEndian) / view.getUint32(o + 4, bigEndian);
+          const min = view.getUint32(o + 8, bigEndian) / view.getUint32(o + 12, bigEndian);
+          const sec = view.getUint32(o + 16, bigEndian) / view.getUint32(o + 20, bigEndian);
+          return deg + (min / 60) + (sec / 3600);
+        };
+
+        for (let j = 0; j < gpsEntries; j++) {
+          const entryPos = gpsCur + 2 + j * 12;
+          const tag = view.getUint16(entryPos, bigEndian);
+          if (tag === 1) latRef = String.fromCharCode(view.getUint8(entryPos + 8));
+          else if (tag === 2) latVal = readCoord(view.getUint32(entryPos + 8, bigEndian));
+          else if (tag === 3) lonRef = String.fromCharCode(view.getUint8(entryPos + 8));
+          else if (tag === 4) lonVal = readCoord(view.getUint32(entryPos + 8, bigEndian));
+        }
+
+        if (latVal !== null && lonVal !== null) {
+          if (latRef === 'S') latVal = -latVal;
+          if (lonRef === 'W') lonVal = -lonVal;
+          return { latitude: latVal, longitude: lonVal, isExifGps: true };
+        }
+        return null;
+      }
+      offset += 2 + view.getUint16(offset + 2, false);
+    }
+  } catch (e) {
+    console.warn('EXIF parse hatası:', e);
+  }
+  return null;
+}
+
 // Start AI / Real Verification Analysis (Gerçek Yapay Zeka Vision İncelemesi)
 async function startAnalysis() {
   if (!selectedFile) return;
@@ -505,7 +586,9 @@ Sana verilen görseli piksel, doku, aydınlatma, nesne simetrisi ve parazit aç�
     "Metinler ve simgeler vektörel netliktedir, sentetik bozulma içermez.",
     "GenAI difüzyon modellerine özgü piksel tutarsızlıkları bulunmamaktadır."
   ],
-  "location": "Görselin çekildiği şehir/ülke veya ait olduğu ortam (Örn: 'İstanbul, Türkiye - Dış Mekan', 'Apple macOS Masaüstü Arayüzü', 'İç Mekan Stüdyo Çekimi' vb.)"
+  "location": "Görselin çekildiği şehir/ülke/mekan veya ait olduğu ortam (Örn: 'Sultanahmet Camii, Fatih / İstanbul' veya 'Apple macOS Masaüstü Arayüzü')",
+  "latitude": 41.0054,
+  "longitude": 28.9768
 }
 
 (Not: headline, badge ve signals maddelerini kullanıcının seçtiği dil olan '${currentLang}' dilinde yaz!).
@@ -520,6 +603,13 @@ verdict_type değeri yapay zeka için "ai", gerçek/ekran görüntüsü için "r
     checkBtn.disabled = false;
     checkText.textContent = t.btnCheck;
 
+    // EXIF GPS kontrolü
+    const exifGps = await extractExifGps(selectedFile);
+    if (exifGps) {
+      resultData.latitude = exifGps.latitude;
+      resultData.longitude = exifGps.longitude;
+      resultData.isExifGps = true;
+    }
     renderRealVerificationResult(resultData);
   } catch (err) {
     console.error("Analiz hatası:", err);
@@ -567,12 +657,36 @@ function renderRealVerificationResult(data) {
     </div>
   `).join('');
 
-  // Konum / Çekim Ortamı Gösterimi
+  // Konum, Koordinat & Haritaya Git Gösterimi
   const locBox = document.getElementById('location-box');
   const locDesc = document.getElementById('location-desc');
+  const locCoords = document.getElementById('location-coords');
+  const btnOpenMap = document.getElementById('btn-open-map');
+
   if (data.location && locBox && locDesc) {
     locDesc.textContent = data.location;
     locBox.style.display = 'flex';
+
+    // Enlem & Boylam Koordinat Kontrolü
+    const lat = parseFloat(data.latitude);
+    const lng = parseFloat(data.longitude);
+    const hasValidCoords = !isNaN(lat) && !isNaN(lng) && (lat !== 0 || lng !== 0);
+
+    if (hasValidCoords && locCoords && btnOpenMap) {
+      const latCard = lat >= 0 ? `${lat.toFixed(4)}° K` : `${Math.abs(lat).toFixed(4)}° G`;
+      const lngCard = lng >= 0 ? `${lng.toFixed(4)}° D` : `${Math.abs(lng).toFixed(4)}° B`;
+      const gpsSourceBadge = data.isExifGps ? ' [Kamera GPS]' : '';
+      
+      locCoords.textContent = `${latCard}, ${lngCard}${gpsSourceBadge}`;
+      locCoords.style.display = 'flex';
+
+      // Google Maps & Apple Maps Doğrudan Navigasyon Linki
+      btnOpenMap.href = `https://www.google.com/maps?q=${lat},${lng}`;
+      btnOpenMap.style.display = 'inline-flex';
+    } else {
+      if (locCoords) locCoords.style.display = 'none';
+      if (btnOpenMap) btnOpenMap.style.display = 'none';
+    }
   } else if (locBox) {
     locBox.style.display = 'none';
   }
