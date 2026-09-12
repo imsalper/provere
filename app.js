@@ -200,12 +200,16 @@ document.addEventListener('DOMContentLoaded', () => {
   setupDragAndDrop();
 });
 
-// Açık dosya seçici (HTML'deki upload-placeholder onclick="triggerFilePicker()" burayı çağırıyor)
-function triggerFilePicker() {
-  if (currentMode === 'video') {
-    document.getElementById('input-video').click();
-  } else {
-    document.getElementById('input-photo').click();
+// Açık dosya seçici
+function triggerFilePicker(e) {
+  if (e) {
+    e.stopPropagation();
+  }
+  const inputId = currentMode === 'video' ? 'input-video' : 'input-photo';
+  const input = document.getElementById(inputId);
+  if (input) {
+    input.value = '';
+    input.click();
   }
 }
 
@@ -213,20 +217,35 @@ function triggerFilePicker() {
 function setupEventListeners() {
   const btnPhoto = document.getElementById('mode-photo-btn') || document.getElementById('mode-photo');
   const btnVideo = document.getElementById('mode-video-btn') || document.getElementById('mode-video');
-  if (btnPhoto) btnPhoto.addEventListener('click', () => selectMode('photo'));
-  if (btnVideo) btnVideo.addEventListener('click', () => selectMode('video'));
+  if (btnPhoto) {
+    btnPhoto.addEventListener('click', (e) => {
+      e.stopPropagation();
+      selectMode('photo', true);
+    });
+  }
+  if (btnVideo) {
+    btnVideo.addEventListener('click', (e) => {
+      e.stopPropagation();
+      selectMode('video', true);
+    });
+  }
 
-  document.getElementById('input-photo').addEventListener('change', (e) => handleFileSelected(e, 'photo'));
-  document.getElementById('input-video').addEventListener('change', (e) => handleFileSelected(e, 'video'));
+  const inputPhoto = document.getElementById('input-photo');
+  const inputVideo = document.getElementById('input-video');
+  if (inputPhoto) {
+    inputPhoto.addEventListener('change', (e) => handleFileSelected(e, 'photo'));
+  }
+  if (inputVideo) {
+    inputVideo.addEventListener('change', (e) => handleFileSelected(e, 'video'));
+  }
 
-  document.getElementById('preview-card').addEventListener('click', (e) => {
-    if (e.target.closest('#btn-clear') || e.target.closest('#btn-control') || e.target.closest('.action-button-3d')) return;
-    if (currentMode === 'photo') {
-      document.getElementById('input-photo').click();
-    } else {
-      document.getElementById('input-video').click();
-    }
-  });
+  const previewCard = document.getElementById('preview-card');
+  if (previewCard) {
+    previewCard.addEventListener('click', (e) => {
+      if (e.target.closest('#btn-clear') || e.target.closest('#btn-control') || e.target.closest('.preview-element')) return;
+      triggerFilePicker(e);
+    });
+  }
 
   const btnClear = document.getElementById('btn-clear');
   if (btnClear) btnClear.addEventListener('click', clearSelectedMedia);
@@ -244,7 +263,7 @@ function setupEventListeners() {
 }
 
 // Mode Selection
-function selectMode(mode) {
+function selectMode(mode, openPicker = false) {
   currentMode = mode;
   const btnPhoto = document.getElementById('mode-photo-btn') || document.getElementById('mode-photo');
   const btnVideo = document.getElementById('mode-video-btn') || document.getElementById('mode-video');
@@ -256,7 +275,17 @@ function selectMode(mode) {
     if (btnVideo) btnVideo.classList.add('active');
     if (btnPhoto) btnPhoto.classList.remove('active');
   }
+
+  if (openPicker) {
+    triggerFilePicker();
+  }
 }
+
+// Global exposure for event handlers
+window.selectMode = selectMode;
+window.triggerFilePicker = triggerFilePicker;
+window.clearSelectedMedia = clearSelectedMedia;
+window.startAnalysis = startAnalysis;
 
 // Language Switcher
 function toggleLangMenu() {
