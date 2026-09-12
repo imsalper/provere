@@ -1,15 +1,25 @@
 {
-  "name": "Provere — AI Detector",
+  "id": "com.alpergulen.provere",
+  "name": "Provere — AI vs Real Detector",
   "short_name": "Provere",
-  "start_url": "./",
+  "description": "Fotoğraf ve videoların yapay zeka tarafından mı üretildiğini yoksa gerçek mi olduğunu tespit eden doğrulama uygulaması.",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#05070B",
   "theme_color": "#05070B",
   "orientation": "portrait",
+  "categories": ["utilities", "productivity", "photo"],
   "icons": [
     {
       "src": "icon.png",
       "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon.png",
+      "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     }
