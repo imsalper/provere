@@ -13,13 +13,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20260913_commercial_v5">
+  <link rel="stylesheet" href="style.css?v=20260913_commercial_v6">
 </head>
 <body>
   <div class="cyber-grid"></div>
 
   <div class="app-container">
-    <!-- Header -->
     <header>
       <div class="brand">
         <div class="brand-icon">
@@ -31,7 +30,6 @@
         </div>
       </div>
 
-      <!-- Language Selector Dropdown (7 Languages) -->
       <div class="lang-dropdown-wrapper">
         <button id="lang-toggle-btn" class="lang-btn" onclick="toggleLangMenu()">
           <span id="current-lang-flag">🇹🇷</span>
@@ -50,15 +48,12 @@
       </div>
     </header>
 
-    <!-- Hero Title -->
     <div class="hero-title">
       <h1 id="t-hero-title">Yapay Zeka mı, Gerçek mi?</h1>
       <p id="t-hero-desc">Fotoğraf veya video yükleyin; pikselleri, mimikleri ve yapay zeka izlerini saniyeler içinde doğrulayın.</p>
     </div>
 
-    <!-- 2 GÖZ ALICI 3D TUŞ: FOTOĞRAF & VİDEO -->
     <div class="buttons-grid">
-      <!-- 1. Fotoğraf Butonu -->
       <button class="btn-3d btn-photo active" id="mode-photo-btn" onclick="selectMode('photo')">
         <span class="btn-3d-shadow"></span>
         <span class="btn-3d-edge"></span>
@@ -71,7 +66,6 @@
         </span>
       </button>
 
-      <!-- 2. Video Butonu -->
       <button class="btn-3d btn-video" id="mode-video-btn" onclick="selectMode('video')">
         <span class="btn-3d-shadow"></span>
         <span class="btn-3d-edge"></span>
@@ -85,15 +79,12 @@
       </button>
     </div>
 
-    <!-- Hidden Native File Inputs -->
     <input type="file" id="input-photo" accept="image/*, .heic, .heif, .jpg, .jpeg, .png, .webp" style="display: none;">
     <input type="file" id="input-video" accept="video/*, .mp4, .mov, .webm, .m4v" style="display: none;">
 
-    <!-- Medya Yükleme & Önizleme Kartı -->
     <div class="preview-card" id="preview-card">
       <div class="scan-laser-line" id="scan-laser"></div>
 
-      <!-- Yükleme Bekleme Durumu (Boşken) -->
       <div class="upload-placeholder" id="upload-placeholder" onclick="triggerFilePicker()">
         <div class="upload-icon-circle">
           <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
@@ -104,16 +95,16 @@
         </div>
       </div>
 
-      <!-- Medya Önizleme Alanı (Dosya Seçilince) -->
       <div class="media-preview-container" id="media-preview-container">
-        <button class="remove-media-btn" onclick="clearSelectedMedia(event)" title="Kaldır">✕</button>
+        <button class="remove-media-btn" id="btn-clear" onclick="clearSelectedMedia(event)" title="Kaldır">✕</button>
         <img id="img-preview" class="preview-element" alt="Önizleme" style="display: none;">
         <video id="video-preview" class="preview-element" controls playsinline style="display: none;"></video>
-        <div id="media-info-text" style="font-size: 12px; color: var(--text-muted); margin-top: 10px;"></div>
+        <div id="media-info-text" style="font-size: 12px; color: var(--text-muted); margin-top: 10px;">
+          <span id="media-filename"></span> <span id="media-filesize"></span>
+        </div>
       </div>
     </div>
 
-    <!-- 3D BÜYÜK KONTROL ET TUŞU -->
     <button class="btn-control-3d" id="btn-control" onclick="startAnalysis()" disabled>
       <span class="btn-control-edge"></span>
       <span class="btn-control-front">
@@ -122,7 +113,6 @@
       </span>
     </button>
 
-    <!-- SONUÇ & RAPOR KARTI -->
     <div class="result-card" id="result-card">
       <div class="result-meter">
         <svg class="meter-circle" width="140" height="140">
@@ -140,12 +130,8 @@
         <div class="verdict-badge" id="verdict-badge">SENTETİK GÖRSEL (AI)</div>
       </div>
 
-      <!-- İnceleme Bulguları / Sinyaller -->
-      <div class="signals-list" id="signals-list">
-        <!-- Dinamik olarak JS tarafından doldurulacak -->
-      </div>
+      <div class="signals-list" id="signals-list"></div>
 
-      <!-- Konum & Çekim Ortamı Dedektörü -->
       <div id="location-box" class="location-box" style="display: none;">
         <div class="location-badge">
           <span class="location-icon">📍</span>
@@ -170,13 +156,12 @@
     </footer>
   </div>
 
-  <script src="app.js?v=20260913_commercial_v5"></script>
+  <script src="app.js?v=20260913_commercial_v6"></script>
   <script>
-    // Immediate legacy cache purging to ensure fresh commercial v5 logic is active
     if ('caches' in window) {
       caches.keys().then((names) => {
         names.forEach((name) => {
-          if (name !== 'provere-v5') {
+          if (name !== 'provere-v6') {
             caches.delete(name);
           }
         });
