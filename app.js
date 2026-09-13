@@ -239,7 +239,7 @@ let selectedFile = null;
 let selectedFileObjectUrl = null;
 
 // Initialize
-document.addEventListener('DOMContentLoaded', () => {
+function initApp() {
   const savedLang = localStorage.getItem('provere_lang');
   if (savedLang && TRANSLATIONS[savedLang]) {
     setLanguage(savedLang);
@@ -254,13 +254,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
   setupEventListeners();
   setupDragAndDrop();
-});
+}
 
-// Açık dosya seçici
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
+
+// Açık dosya seçici (Debounced to avoid rapid double-click aborts)
+let isPickerOpening = false;
 function triggerFilePicker(mode, e) {
   if (e && typeof e.stopPropagation === 'function') {
     e.stopPropagation();
   }
+  if (isPickerOpening) return;
+  isPickerOpening = true;
+  setTimeout(() => { isPickerOpening = false; }, 400);
+
   const targetMode = mode || currentMode;
   let inputId = 'input-photo';
   if (targetMode === 'video') inputId = 'input-video';
@@ -269,6 +280,7 @@ function triggerFilePicker(mode, e) {
   const input = document.getElementById(inputId);
   if (input) {
     try {
+      input.value = ''; // Reset so choosing the exact same file triggers change
       input.click();
     } catch (err) {
       console.warn("Dosya seçici açılamadı:", err);
@@ -278,15 +290,19 @@ function triggerFilePicker(mode, e) {
 
 // Global button click dispatchers
 function handleModeBtnClick(mode, e) {
-  if (e && typeof e.stopPropagation === 'function') {
-    e.stopPropagation();
+  if (e) {
+    if (typeof e.preventDefault === 'function') e.preventDefault();
+    if (typeof e.stopPropagation === 'function') e.stopPropagation();
   }
   selectMode(mode, mode !== 'audio');
 }
 
 function handlePreviewCardClick(e) {
   if (currentMode === 'audio') return;
-  if (e && e.target && (e.target.closest('#btn-clear') || e.target.closest('#btn-control') || e.target.closest('.preview-element') || e.target.closest('#audio-container'))) {
+  if (selectedFile) {
+    if (e && e.target && (e.target.closest('#btn-clear') || e.target.closest('#btn-control') || e.target.closest('.preview-element') || e.target.closest('#audio-container'))) {
+      return;
+    }
     return;
   }
   triggerFilePicker(currentMode, e);
@@ -313,69 +329,57 @@ function handleControlBtnClick(e) {
   startAnalysis();
 }
 
-// Setup Events
+// Setup Events (Using property assignment so listeners are idempotent and never fire twice)
 function setupEventListeners() {
   const btnPhoto = document.getElementById('mode-photo-btn') || document.getElementById('mode-photo');
   const btnVideo = document.getElementById('mode-video-btn') || document.getElementById('mode-video');
   const btnAudio = document.getElementById('mode-audio-btn');
 
-  if (btnPhoto) {
-    btnPhoto.addEventListener('click', (e) => handleModeBtnClick('photo', e));
-  }
-  if (btnVideo) {
-    btnVideo.addEventListener('click', (e) => handleModeBtnClick('video', e));
-  }
-  if (btnAudio) {
-    btnAudio.addEventListener('click', (e) => handleModeBtnClick('audio', e));
-  }
+  if (btnPhoto) btnPhoto.onclick = (e) => handleModeBtnClick('photo', e);
+  if (btnVideo) btnVideo.onclick = (e) => handleModeBtnClick('video', e);
+  if (btnAudio) btnAudio.onclick = (e) => handleModeBtnClick('audio', e);
 
   const inputPhoto = document.getElementById('input-photo');
   const inputVideo = document.getElementById('input-video');
   const inputAudio = document.getElementById('input-audio');
-  if (inputPhoto) {
-    inputPhoto.addEventListener('change', (e) => handleFileSelected(e, 'photo'));
-  }
-  if (inputVideo) {
-    inputVideo.addEventListener('change', (e) => handleFileSelected(e, 'video'));
-  }
-  if (inputAudio) {
-    inputAudio.addEventListener('change', (e) => handleAudioFileSelected(e));
-  }
+  if (inputPhoto) inputPhoto.onchange = (e) => handleFileSelected(e, 'photo');
+  if (inputVideo) inputVideo.onchange = (e) => handleFileSelected(e, 'video');
+  if (inputAudio) inputAudio.onchange = (e) => handleAudioFileSelected(e);
 
   // Audio mic button & file link
   const btnMic = document.getElementById('btn-mic-listen');
   if (btnMic) {
-    btnMic.addEventListener('click', (e) => {
+    btnMic.onclick = (e) => {
       e.stopPropagation();
       toggleAudioListening(e);
-    });
+    };
   }
   const linkUploadAudio = document.getElementById('link-upload-audio');
   if (linkUploadAudio) {
-    linkUploadAudio.addEventListener('click', (e) => {
+    linkUploadAudio.onclick = (e) => {
       e.stopPropagation();
       triggerFilePicker('audio', e);
-    });
+    };
   }
 
   const previewCard = document.getElementById('preview-card');
   if (previewCard) {
-    previewCard.addEventListener('click', (e) => handlePreviewCardClick(e));
+    previewCard.onclick = (e) => handlePreviewCardClick(e);
   }
 
   const btnClear = document.getElementById('btn-clear');
-  if (btnClear) btnClear.addEventListener('click', clearSelectedMedia);
+  if (btnClear) btnClear.onclick = (e) => clearSelectedMedia(e);
 
   const btnControl = document.getElementById('btn-control');
-  if (btnControl) btnControl.addEventListener('click', (e) => handleControlBtnClick(e));
+  if (btnControl) btnControl.onclick = (e) => handleControlBtnClick(e);
 
-  document.addEventListener('click', (e) => {
+  document.onclick = (e) => {
     const dropdown = document.querySelector('.lang-dropdown-wrapper');
     const menu = document.getElementById('lang-menu');
     if (dropdown && !dropdown.contains(e.target)) {
       if (menu) menu.classList.remove('show');
     }
-  });
+  };
 }
 
 // Mode Selection
@@ -408,18 +412,19 @@ function selectMode(mode, openPicker = false) {
   } else if (mode === 'audio') {
     if (btnAudio) btnAudio.classList.add('active');
     if (uploadPlaceholder) uploadPlaceholder.style.display = 'none';
-    if (previewContainer && (!selectedFile || !selectedFile.type.startsWith('audio/'))) {
+    if (previewContainer && (!selectedFile || !(selectedFile.type && selectedFile.type.startsWith('audio/')))) {
       previewContainer.style.display = 'none';
     }
     if (audioContainer) audioContainer.style.display = 'flex';
   }
 
   if (openPicker && mode !== 'audio') {
-    triggerFilePicker();
+    triggerFilePicker(mode);
   }
 }
 
 // Global exposure for event handlers
+window.initApp = initApp;
 window.selectMode = selectMode;
 window.triggerFilePicker = triggerFilePicker;
 window.clearSelectedMedia = clearSelectedMedia;
@@ -428,6 +433,10 @@ window.handleModeBtnClick = handleModeBtnClick;
 window.handlePreviewCardClick = handlePreviewCardClick;
 window.handleControlBtnClick = handleControlBtnClick;
 window.toggleAudioListening = toggleAudioListening;
+window.handleFileSelected = handleFileSelected;
+window.handleAudioFileSelected = handleAudioFileSelected;
+window.handleFileSelect = handleFileSelect;
+window.handleAudioFileSelect = handleAudioFileSelect;
 
 // Language Switcher
 function toggleLangMenu() {
@@ -474,11 +483,12 @@ function setLanguage(lang) {
 
 // Memory-Safe File Selection (Object URLs prevent memory leaks and iOS Safari tab crashes)
 function handleFileSelected(e, expectedMode) {
-  const file = e.target.files[0];
+  const file = (e && e.target && e.target.files && e.target.files[0]) ? e.target.files[0] : null;
   if (!file) return;
 
-  if (expectedMode && currentMode !== expectedMode) {
-    selectMode(expectedMode);
+  const targetMode = expectedMode || currentMode;
+  if (targetMode && currentMode !== targetMode) {
+    selectMode(targetMode, false);
   }
 
   handleFileSelect(file);
@@ -489,10 +499,16 @@ function handleFileSelect(file) {
   selectedFile = file;
 
   if (selectedFileObjectUrl) {
-    URL.revokeObjectURL(selectedFileObjectUrl);
+    try {
+      URL.revokeObjectURL(selectedFileObjectUrl);
+    } catch (_) {}
     selectedFileObjectUrl = null;
   }
-  selectedFileObjectUrl = URL.createObjectURL(file);
+  try {
+    selectedFileObjectUrl = URL.createObjectURL(file);
+  } catch (err) {
+    console.warn("ObjectURL oluşturulamadı:", err);
+  }
 
   const previewCard = document.getElementById('preview-card');
   const uploadPlaceholder = document.getElementById('upload-placeholder');
@@ -503,31 +519,58 @@ function handleFileSelect(file) {
   const mediaFilesize = document.getElementById('media-filesize');
   const checkBtn = document.getElementById('btn-control');
   const resultCard = document.getElementById('result-card');
+  const audioContainer = document.getElementById('audio-container');
 
   // Format file size
   const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
-  if (mediaFilename) mediaFilename.textContent = file.name;
+  if (mediaFilename) mediaFilename.textContent = file.name || 'Görsel';
   if (mediaFilesize) mediaFilesize.textContent = `${sizeMb} MB`;
 
+  if (audioContainer) audioContainer.style.display = 'none';
   if (uploadPlaceholder) uploadPlaceholder.style.display = 'none';
-  if (previewContainer) previewContainer.style.display = 'block';
+  if (previewContainer) {
+    previewContainer.style.display = 'flex';
+  }
   if (previewCard) previewCard.classList.add('has-file');
   if (resultCard) resultCard.style.display = 'none';
 
-  const isVideo = file.type.startsWith('video/') || file.name.match(/\.(mp4|mov|webm|m4v)$/i);
+  const isVideo = (file.type && typeof file.type === 'string' && file.type.startsWith('video/')) || 
+                  (file.name && /\.(mp4|mov|webm|m4v)$/i.test(file.name));
 
   if (!isVideo) {
-    if (videoPreview) videoPreview.style.display = 'none';
+    if (videoPreview) {
+      videoPreview.style.display = 'none';
+      videoPreview.src = '';
+    }
     if (imgPreview) {
       imgPreview.style.display = 'block';
-      imgPreview.src = selectedFileObjectUrl;
+      if (selectedFileObjectUrl) {
+        imgPreview.src = selectedFileObjectUrl;
+      }
+      // Fallback if ObjectURL fails to render or errors
+      imgPreview.onerror = () => {
+        try {
+          const reader = new FileReader();
+          reader.onload = (re) => {
+            imgPreview.src = re.target.result;
+          };
+          reader.readAsDataURL(file);
+        } catch (err) {
+          console.warn("FileReader fallback hatası:", err);
+        }
+      };
     }
     if (checkBtn) checkBtn.disabled = false;
   } else {
-    if (imgPreview) imgPreview.style.display = 'none';
+    if (imgPreview) {
+      imgPreview.style.display = 'none';
+      imgPreview.src = '';
+    }
     if (videoPreview) {
       videoPreview.style.display = 'block';
-      videoPreview.src = selectedFileObjectUrl;
+      if (selectedFileObjectUrl) {
+        videoPreview.src = selectedFileObjectUrl;
+      }
     }
     if (checkBtn) checkBtn.disabled = false;
   }
@@ -985,15 +1028,19 @@ function setupDragAndDrop() {
 
 // Clear Media
 function clearSelectedMedia(e) {
-  if (e) e.stopPropagation();
+  if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
   if (selectedFileObjectUrl) {
-    URL.revokeObjectURL(selectedFileObjectUrl);
+    try {
+      URL.revokeObjectURL(selectedFileObjectUrl);
+    } catch (_) {}
     selectedFileObjectUrl = null;
   }
   selectedFile = null;
 
-  document.getElementById('input-photo').value = '';
-  document.getElementById('input-video').value = '';
+  const inPhoto = document.getElementById('input-photo');
+  if (inPhoto) inPhoto.value = '';
+  const inVideo = document.getElementById('input-video');
+  if (inVideo) inVideo.value = '';
   const inputAudio = document.getElementById('input-audio');
   if (inputAudio) inputAudio.value = '';
   if (isListening) stopAudioListening(false);
@@ -1012,8 +1059,14 @@ function clearSelectedMedia(e) {
   const checkBtn = document.getElementById('btn-control');
   const resultCard = document.getElementById('result-card');
 
-  if (imgPreview) imgPreview.src = '';
-  if (videoPreview) videoPreview.src = '';
+  if (imgPreview) {
+    imgPreview.src = '';
+    imgPreview.style.display = 'none';
+  }
+  if (videoPreview) {
+    videoPreview.src = '';
+    videoPreview.style.display = 'none';
+  }
   if (uploadPlaceholder) uploadPlaceholder.style.display = 'flex';
   if (previewContainer) previewContainer.style.display = 'none';
   if (previewCard) previewCard.classList.remove('has-file');
@@ -1181,7 +1234,7 @@ function calculatePixelNoiseHeuristics(ctx, width, height) {
 async function prepareImageForAnalysis(file, imgElement) {
   return new Promise((resolve) => {
     const img = new Image();
-    img.crossOrigin = 'anonymous';
+    // Do not set crossOrigin on local blob URLs as it can cause taint errors in Safari/iOS
     img.onload = () => {
       const maxDim = 1600;
       let width = img.naturalWidth || img.width;

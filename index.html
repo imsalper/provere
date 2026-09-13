@@ -94,9 +94,9 @@
       </button>
     </div>
 
-    <input type="file" id="input-photo" accept="image/*,.heic,.heif,.jpg,.jpeg,.png,.webp" style="position: fixed; top: -2000px; left: -2000px; opacity: 0;">
-    <input type="file" id="input-video" accept="video/*,.mp4,.mov,.webm,.m4v" style="position: fixed; top: -2000px; left: -2000px; opacity: 0;">
-    <input type="file" id="input-audio" accept="audio/*,.mp3,.wav,.m4a,.ogg,.aac,.flac" style="position: fixed; top: -2000px; left: -2000px; opacity: 0;">
+    <input type="file" id="input-photo" accept="image/*,.heic,.heif,.jpg,.jpeg,.png,.webp" onchange="handleFileSelected(event, 'photo')" style="position: fixed; top: -2000px; left: -2000px; opacity: 0;">
+    <input type="file" id="input-video" accept="video/*,.mp4,.mov,.webm,.m4v" onchange="handleFileSelected(event, 'video')" style="position: fixed; top: -2000px; left: -2000px; opacity: 0;">
+    <input type="file" id="input-audio" accept="audio/*,.mp3,.wav,.m4a,.ogg,.aac,.flac" onchange="handleAudioFileSelected(event)" style="position: fixed; top: -2000px; left: -2000px; opacity: 0;">
 
     <div class="preview-card" id="preview-card" onclick="handlePreviewCardClick(event)" style="cursor: pointer;">
       <div class="scan-laser-line" id="scan-laser"></div>
@@ -138,7 +138,7 @@
       </div>
 
       <div class="media-preview-container" id="media-preview-container">
-        <button class="remove-media-btn" id="btn-clear" title="Kaldır">✕</button>
+        <button class="remove-media-btn" id="btn-clear" onclick="clearSelectedMedia(event)" title="Kaldır">✕</button>
         <img id="img-preview" class="preview-element" alt="Önizleme" style="display: none;">
         <video id="video-preview" class="preview-element" controls playsinline style="display: none;"></video>
         <div id="media-info-text" style="font-size: 12px; color: var(--text-muted); margin-top: 10px;">
@@ -247,7 +247,7 @@
     </footer>
   </div>
 
-  <script src="app.js?v=20260913_1325"></script>
+  <script src="app.js?v=20260913_1350"></script>
   <script>
     // Mevcut service worker kayıtlarını ve cache'leri temizle
     if ('serviceWorker' in navigator) {
