@@ -1174,6 +1174,33 @@ async function analyzeForensicContainer(file) {
 // API anahtarı ARTIK bu dosyada YOK. Anahtar sadece Cloudflare Worker'ın
 // şifrelenmiş "Secret" değişkeninde duruyor.
 // ---------------------------------------------------------------------------
+// Robust JSON parser for AI responses (handles code blocks, thought signatures, preambles)
+function safeParseForensicJson(rawText) {
+  if (!rawText) throw new Error("Yapay zeka modeli boş yanıt döndürdü.");
+  
+  // 1. Try markdown ```json ... ``` extraction
+  const codeBlockMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  if (codeBlockMatch && codeBlockMatch[1]) {
+    try {
+      return JSON.parse(codeBlockMatch[1].trim());
+    } catch (e) {}
+  }
+
+  // 2. Try outermost { ... } match
+  const firstBrace = rawText.indexOf('{');
+  const lastBrace = rawText.lastIndexOf('}');
+  if (firstBrace !== -1 && lastBrace > firstBrace) {
+    const jsonSubstring = rawText.substring(firstBrace, lastBrace + 1);
+    try {
+      return JSON.parse(jsonSubstring.trim());
+    } catch (e) {}
+  }
+
+  // 3. Fallback direct cleaned parse
+  const cleaned = rawText.replace(/```json|```/gi, '').trim();
+  return JSON.parse(cleaned);
+}
+
 const PROXY_URL = "https://provere-proxy.imsalper.workers.dev/";
 
 async function callGeminiVision(base64Data, mimeType, prompt) {
@@ -1310,53 +1337,56 @@ async function startAnalysis() {
       hardwareProof += `\n[UYARI: Dosya metaverisinde difüzyon modeli prompt/seed üretim parametreleri bulundu! AI OLASILIĞINI %95-%99 VER, VERDICT_TYPE: 'ai'].\n`;
     }
 
-    const forensicPrompt = `Sen dünya çapında akredite, modern üretken yapay zekaları (Midjourney v6, Flux.1, Stable Diffusion XL, DALL-E 3, Imagen 3) ve gerçek kamera çekimlerini piksel düzeyinde inceleyen kıdemli bir dijital adli bilişim uzmanısın.
-Sana verilen görseli piksel frekans spektrumu, sensör foton gürültüsü, optik lens kırılmaları, anatomik/dokusal tutarlılık ve modern yapay zeka difüzyon izleri açısından tarafsızca incele.
+    const forensicPrompt = `Sen uluslararası düzeyde akredite, en üst seviye dijital adli bilişim (digital media forensics) ve yapay zeka manipülasyonu başuzmanısın.
+Görevin: Sana sunulan görseli tavizsiz, son derece titiz ve derinlemesine inceleyerek yapay zeka üretimlerini (Midjourney v6, Flux.1, SDXL, DALL-E 3, Imagen 3), difüzyon tabanlı kıyafet değiştirme / inpainting müdahalelerini ve gerçek kamera çekimlerini adli kanıtlarla sınıflandırmaktır.
 ${hardwareProof}
 
-UZMAN ADLİ TESPİT KURALLARI:
+KATI VE TAVİZSİZ ADLİ İNCELEME KURALLARI:
 
-1. YAPAY ZEKA SENTEZİ / ÜRETKEN MODEL TESPİTİ (AI):
-   - Modern yapay zekalar (Midjourney v6, Flux, SDXL, DALL-E 3) artık bozuk parmak yapmaz; ancak şu net difüzyon parmak izlerini bırakırlar:
-   - TARİHİ VE KURGUSAL SAHNELER: Günümüz sinematik/stüdyo ışığıyla veya aşırı net render edilmiş Osmanlı Yeniçerisi, şövalyeler, savaşçılar, mitolojik veya fantastik figürler.
-   - HAYVAN VE DOĞA RENDERLARI: Yapay zeka ile üretilmiş ördek, kuş, kedi vb.; tüylerde mikroskobik matematiksel simetri ve aşırı kusursuz düzen, sentetik parlak göz bebekleri, yapay su dalgacıkları ve gerçek dışı pürüzsüz su yüzeyi.
-   - DİFÜZYON IŞIK VE DOKUSU: Aşırı homojen 'volumetric' ışık, arkadan vuran yapay sinematik rim light, porselen gibi pürüzsüz ama yapay mikro-gözenek simülasyonu, aşırı doygun veya yapay derinlik hissi (unreal bokeh).
-   - Bu belirtiler varsa görsel KESİNLİKLE YAPAY ZEKADIR! ai_probability %85 ile %99 arasında olmalı, verdict_type: 'ai'.
+1. YAPAY ZEKA SENTEZİ, MONTAJI VEYA INPAINTING TESPİTİ (AI - KESİN):
+   Aşağıdaki belirtilerden HERHANGİ BİRİ varsa görsel KESİNLİKLE YAPAY ZEKA (AI) olarak etiketlenmeli ve ai_probability %88-%99 arasında verilmelidir:
+   - KIYAFET DEĞİŞTİRME / KOSTÜM GİYDİRME / INPAINTING:
+     * Gerçek bir insanın üzerine veya üretilen bir karaktere yapay zeka ile tarihi/kurgusal kıyafet (örneğin Osmanlı Yeniçerisi kıyafeti, zırh, kaftan, börk, serpuş, kılıç vb.) giydirilmesi veya yüz/kıyafet montajı.
+     * Boyun, yaka, omuz ve saç diplerinde maske kaynaşması izleri (mask blending artifacts), ten ile kumaşın mantıksız birleşimi, kumaş dikişlerinin fiziksel olmayan difüzyon kaynaşması.
+     * Başlık/kıyafet üzerindeki ışık açısı ile yüzdeki ışığın uyumsuzluğu.
+   - TARİHİ VE KURGUSAL RENDERLAR:
+     * Günümüz modern 4K stüdyo/sinematik netliğinde ve ışıklandırmasında Osmanlı Yeniçerisi, şövalyeler, tarihi savaşçılar veya mitolojik karakterler.
+   - HAYVAN VE DOĞA GÖRSELLERİ:
+     * Yapay zeka ile üretilmiş ördek, kedi, kuş vb. hayvanlar; tüylerde matematiksel aşırı simetri ve kusursuz dizilim, sentetik parıldayan göz bebekleri, yapay su dalgaları veya pürüzsüz difüzyon göletleri.
+   - DİFÜZYON IŞIĞI VE PİKSEL İZLERİ:
+     * Homojen ve gerçek dışı 'volumetric' difüzyon ışığı, arkadan vuran yapay sinematik rim light, porselen gibi pürüzsüz ama yapay mikro-doku simülasyonu.
+   - EKRAN GÖRÜNTÜSÜ / SCREENSHOT YANILSAMASINA DİKKAT:
+     * Bir görselin ekran görüntüsü (screenshot) olması veya telefondan/ekrandan kaydedilmiş olması, içeriğinin gerçek olduğu anlamına GELMEZ! Ekrandaki ana görsel yapay zeka ile üretilmiş veya giydirilmişse karar KESİNLİKLE YAPAY ZEKA (AI) olmalıdır.
 
-2. GERÇEK FOTOĞRAF / KAMERA ÇEKİMİ (REAL):
-   - Günlük hayatta gerçek bir cep telefonu (iPhone, Samsung, Xiaomi vb.), DSLR veya kompakt kamera ile fiziksel ortamda çekilmiş fotoğraflar (odadaki eşyalar, sokak, gerçek insanlar, gerçek selfieler, yemek, masa, belgeler, doğa manzarası).
-   - Fiziksel kamera lensine özgü optik bozulmalar, sensör termal gürültüsü (ISO gürültüsü), düzensiz doğal ışık dağılımı, gerçek dünya pürüzleri ve kusurları.
-   - Bu fotoğraflar GERÇEKTİR! ai_probability %1 ile %15 arasında olmalı, verdict_type: 'real'.
+2. TAMAMEN GERÇEK VE DOĞAL KAMERA ÇEKİMİ (REAL):
+   - Fiziksel kamera lensiyle doğal ortamda çekilmiş, üzerinde HİÇBİR yapay zeka kostümü, inpainting, difüzyon veya sentetik montaj bulunmayan saf gerçek fotoğraflar (günlük hayatta çekilmiş oda, sokak, gerçek sıradan insanlar, belgeler).
+   - Gerçek fiziksel optik kusurlar, sensör foton gürültüsü, doğal gölge dağılımı.
+   - ai_probability %1 ile %12 arasında olmalı, verdict_type: 'real'.
 
-3. DOĞAL EKRAN GÖRÜNTÜSÜ / DİJİTAL ARAYÜZ (REAL):
-   - Telefon veya bilgisayar ekranından doğrudan alınmış ekran görüntüleri (web sayfaları, mesajlaşma, uygulamalar).
-   - ai_probability %0 ile %10 arasında olmalı, verdict_type: 'real'.
-
-YANITINI SADECE VE SADECE AŞAĞIDAKİ GEÇERLİ JSON FORMATINDA VER (başka metin ekleme):
+YANITINI SADECE VE SADECE AŞAĞIDAKİ GEÇERLİ JSON FORMATINDA VER (başka hiçbir metin ekleme):
 {
-  "ai_probability": 90,
+  "ai_probability": 96,
   "verdict_type": "ai",
-  "headline": "Kısa adli tespit başlığı",
-  "badge": "SENTETİK / AI ÜRETİMİ veya GERÇEK MEDYA",
+  "headline": "Kısa ve net adli karar başlığı",
+  "badge": "SENTETİK / AI ÜRETİMİ veya DOĞAL KAMERA ÇEKİMİ",
   "signals": [
-    "Piksel veya difüzyon modeli bulgusu 1",
-    "Işık, kompozisyon veya lens optiği bulgusu 2",
-    "Adli nihai sonuç gerekçesi 3"
+    "Piksel, difüzyon modeli veya inpainting bulgusu 1",
+    "Işık, kompozisyon, kumaş veya optik bulgusu 2",
+    "Adli nihai gerekçe 3"
   ],
-  "location": "Dünyaca bilinen belirgin eser varsa mekan adı, yoksa 'Konum verisi bulunamadı'",
+  "location": "Dünyaca bilinen belirgin coğrafi eser varsa mekan adı, yoksa 'Konum verisi bulunamadı'",
   "latitude": null,
   "longitude": null
 }
 
 KRİTİK KONUM KURALI:
-- Fotoğrafta dünyaca bilinen belirgin bir coğrafi eser (ör. Eyfel Kulesi, Boğaz Köprüsü vb.) yoksa latitude ve longitude KESİNLİKLE null ver.
+- Fotoğrafta dünyaca bilinen belirgin bir coğrafi eser yoksa latitude ve longitude KESİNLİKLE null ver.
 - İç mekan, dijital ekran, yapay zeka kurgusu veya sıradan nesnelerde location alanına 'Konum verisi bulunamadı' yaz.
 
 (headline, badge, signals ve location alanlarını '${currentLang}' dilinde yaz).`;
 
     const rawResponse = await callGeminiVision(analysisFrameData.base64, analysisFrameData.mimeType, forensicPrompt);
-    const cleanJson = rawResponse.replace(/```json|```/g, '').trim();
-    const resultData = JSON.parse(cleanJson);
+    const resultData = safeParseForensicJson(rawResponse);
 
     // 4. TICARI ADLİ GÜVENCE:
     // Yalnızca model kararsız kaldıysa ve gerçek optik lens donanımı kesinse müdahale et.
@@ -1394,9 +1424,9 @@ KRİTİK KONUM KURALI:
     checkBtn.disabled = false;
     checkText.textContent = t.btnCheck;
 
-    // Ağ veya API kopmasında dürüst deterministik adli yedek motor
+    // Ağ veya API kopmasında dürüst adli yedek motor
     const forensics = await analyzeForensicContainer(selectedFile);
-    renderDeterministicFallback(selectedFile, forensics);
+    renderDeterministicFallback(selectedFile, forensics, err.message || "Bağlantı hatası");
   }
 }
 
@@ -1454,8 +1484,7 @@ YANITINI SADECE VE SADECE AŞAĞIDAKİ GEÇERLİ JSON FORMATINDA VER (başka met
 
   try {
     const rawResponse = await callGeminiVision(audioBase64, mimeType, audioForensicPrompt);
-    const cleanJson = rawResponse.replace(/```json|```/g, '').trim();
-    const resultData = JSON.parse(cleanJson);
+    const resultData = safeParseForensicJson(rawResponse);
 
     if (previewCard) previewCard.classList.remove('scanning');
     if (checkBtn) {
@@ -1605,12 +1634,28 @@ function renderLocationBox(data) {
   }
 }
 
-// Deterministic Offline & Emergency Forensics Engine (Never outputs random 74% scores!)
-function renderDeterministicFallback(file, forensics) {
+// Deterministic Offline & Emergency Forensics Engine
+function renderDeterministicFallback(file, forensics, errorMsg = "") {
   const t = TRANSLATIONS[currentLang];
-  const filename = (file && file.name) ? file.name.toLowerCase() : "";
 
-  // 1. Hardware Verified Camera
+  // 1. AI Generator Metadata Tag Explicitly Found in file chunks
+  if (forensics && forensics.isAiMetadataTag) {
+    renderRealVerificationResult({
+      ai_probability: 98,
+      verdict_type: 'ai',
+      headline: "Yapay Zeka Sentezi (Difüzyon Parametreleri Saptandı)",
+      badge: "SENTETİK / AI ÜRETİMİ",
+      signals: [
+        "Dosya üstverisinde difüzyon modeline ait (Stable Diffusion/Midjourney/ComfyUI) üretim parametreleri bulundu.",
+        "Görsel doğrudan üretken yapay zeka yazılımı ile render edilmiştir.",
+        "Fiziksel optik kamera sensör izleri bulunmamaktadır."
+      ],
+      location: "Konum verisi bulunamadı"
+    });
+    return;
+  }
+
+  // 2. Hardware Verified Camera (Only when physical fNumber and exposureTime exist)
   if (forensics && forensics.isVerifiedHardware) {
     const cam = [forensics.cameraMake, forensics.cameraModel].filter(Boolean).join(" ");
     renderRealVerificationResult({
@@ -1619,8 +1664,8 @@ function renderDeterministicFallback(file, forensics) {
       headline: `${cam || 'Kamera'} Donanımı Doğrulandı`,
       badge: t.badgeHardwareVerified || "DONANIM DOĞRULAMALI ÇEKİM",
       signals: [
-        `Donanım İncelemesi: Dosyada fiziksel ${cam} optik sensör parametreleri saptandı.`,
-        "Yapay zeka difüzyon modelleri fiziksel kamera diyaframı ve sensör etiketi üretemez.",
+        `Donanım İncelemesi: Dosyada fiziksel ${cam} optik sensör ve diyafram parametreleri saptandı.`,
+        "Fiziksel kamera diyaframı ve pozlama değerleri doğrulanmıştır.",
         "Yerel adli bilişim analizi: Doğal kamera çekimi olarak onaylandı."
       ],
       location: "Konum verisi bulunamadı",
@@ -1631,51 +1676,16 @@ function renderDeterministicFallback(file, forensics) {
     return;
   }
 
-  // 2. AI Generator Metadata Found
-  if (forensics && forensics.isAiMetadataTag) {
-    renderRealVerificationResult({
-      ai_probability: 96,
-      verdict_type: 'ai',
-      headline: "Yapay Zeka Sentezi (Model Parametreleri Saptandı)",
-      badge: "SENTETİK / AI ÜRETİMİ",
-      signals: [
-        "Dosya üstverisinde difüzyon modeline ait 'prompt' ve 'sampling' parametreleri tespit edildi.",
-        "Görsel üretken yapay zeka yazılımı ile render edilmiştir.",
-        "Optik fiziksel kamera sensör izleri bulunmamaktadır."
-      ],
-      location: "Konum verisi bulunamadı"
-    });
-    return;
-  }
-
-  // 3. Screenshot / UI
-  const isScreenshot = filename.includes('ekran') || filename.includes('screenshot') || filename.includes('screen');
-  if (isScreenshot) {
-    renderRealVerificationResult({
-      ai_probability: 3,
-      verdict_type: 'real',
-      headline: "Doğal Ekran Görüntüsü / Arayüz",
-      badge: "DOĞAL EKRAN GÖRÜNTÜSÜ",
-      signals: [
-        "Görsel cihaz ekran arayüzünden doğrudan yakalanmıştır.",
-        "Metinler ve pikseller vektörel dijital standarttadır.",
-        "Difüzyon yapay zeka modeli deformasyonları bulunmamaktadır."
-      ],
-      location: "Dijital Cihaz Ekranı"
-    });
-    return;
-  }
-
-  // 4. Standard Real Photo Fallback
+  // 3. Network or Server connection failure notice - Never fabricate fake 3% scores!
   renderRealVerificationResult({
-    ai_probability: 8,
-    verdict_type: 'real',
-    headline: "Doğal Görsel / Kamera Kaydı",
-    badge: "GERÇEK MEDYA",
+    ai_probability: 50,
+    verdict_type: 'ai',
+    headline: "Adli Bilişim Sunucu Bağlantı Uyarısı",
+    badge: "YENİDEN DENE",
     signals: [
-      "Piksel frekans dağılımı ve optik kırılmalar doğal kurallarla örtüşmektedir.",
-      "Yapay zeka difüzyon halüsinasyonu veya pürüzsüzleştirme gözlenmedi.",
-      "Doğal ışık geçişleri ve kompozisyon fiziksel ortama uygundur."
+      "Adli analiz yapay zeka servisine erişirken geçici bir bağlantı sorunu oluştu.",
+      errorMsg ? `Hata detayı: ${escapeHtml(errorMsg.slice(0, 100))}` : "Görsel pikselleri yapay zeka motoruna iletilemedi.",
+      "Lütfen internet bağlantınızı kontrol edip 'KONTROL ET' butonuna tekrar basın."
     ],
     location: "Konum verisi bulunamadı"
   });
