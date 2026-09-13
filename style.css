@@ -205,10 +205,33 @@ header {
 /* 3D ACTION BUTTONS (GÖZ ALICI 3D TUŞLAR) */
 .buttons-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
   width: 100%;
   margin-bottom: 24px;
+}
+
+@media (max-width: 520px) {
+  .buttons-grid {
+    gap: 8px;
+  }
+  .btn-3d-front {
+    padding: 16px 8px !important;
+    font-size: 13px !important;
+    gap: 8px !important;
+    border-radius: 16px !important;
+  }
+  .btn-icon-wrapper {
+    width: 38px !important;
+    height: 38px !important;
+  }
+  .btn-icon-wrapper svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
+  .btn-sub-label {
+    font-size: 9px !important;
+  }
 }
 
 .btn-3d {
@@ -252,6 +275,10 @@ header {
   background: linear-gradient(to bottom, #6900aa, #3d0066);
 }
 
+.btn-audio .btn-3d-edge {
+  background: linear-gradient(to bottom, #059669, #064e3b);
+}
+
 .btn-3d-front {
   display: flex;
   flex-direction: column;
@@ -259,9 +286,9 @@ header {
   justify-content: center;
   gap: 12px;
   position: relative;
-  padding: 24px 16px;
+  padding: 22px 12px;
   border-radius: 20px;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   color: white;
   transform: translateY(-6px);
@@ -277,6 +304,11 @@ header {
 .btn-video .btn-3d-front {
   background: linear-gradient(135deg, #9D00FF 0%, #5B0099 100%);
   box-shadow: 0 0 25px var(--neon-purple-glow);
+}
+
+.btn-audio .btn-3d-front {
+  background: linear-gradient(135deg, #10B981 0%, #047857 100%);
+  box-shadow: 0 0 25px rgba(16, 185, 129, 0.4);
 }
 
 .btn-3d:hover .btn-3d-front {
@@ -431,6 +463,112 @@ header {
   15% { opacity: 1; }
   85% { opacity: 1; }
   100% { top: 100%; opacity: 0; }
+}
+
+/* AUDIO CONTAINER & MIC PULSE */
+.audio-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 10px;
+  text-align: center;
+}
+
+.audio-mic-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 6px 0;
+}
+
+.btn-mic-pulse {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 0 30px rgba(16, 185, 129, 0.45);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 2;
+}
+
+.btn-mic-pulse:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 45px rgba(16, 185, 129, 0.7);
+}
+
+.btn-mic-pulse.recording {
+  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+  box-shadow: 0 0 35px rgba(239, 68, 68, 0.7);
+  animation: micPulseRecord 1.2s infinite ease-in-out;
+}
+
+@keyframes micPulseRecord {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.audio-status-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.audio-status-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.audio-timer {
+  font-family: 'Space Grotesk', monospace;
+  font-size: 22px;
+  font-weight: 800;
+  color: #10B981;
+  letter-spacing: 2px;
+  margin: 4px 0;
+}
+
+.audio-status-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  max-width: 280px;
+}
+
+.audio-waveform-canvas {
+  width: 100%;
+  max-width: 320px;
+  height: 55px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.audio-playback-card {
+  width: 100%;
+  max-width: 320px;
+}
+
+.audio-file-upload-link {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.audio-file-upload-link a {
+  color: #10B981;
+  text-decoration: underline;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 /* CHECK NOW 3D BUTTON (KONTROL ET) */

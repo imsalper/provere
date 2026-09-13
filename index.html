@@ -77,14 +77,28 @@
           <span class="btn-sub-label" id="t-sub-video">MP4, MOV, WEBM</span>
         </span>
       </button>
+
+      <button class="btn-3d btn-audio" id="mode-audio-btn">
+        <span class="btn-3d-shadow"></span>
+        <span class="btn-3d-edge"></span>
+        <span class="btn-3d-front">
+          <div class="btn-icon-wrapper">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          </div>
+          <span id="t-btn-audio">SES / ŞARKI</span>
+          <span class="btn-sub-label" id="t-sub-audio">CANLI DİNLE / MP3</span>
+        </span>
+      </button>
     </div>
 
     <input type="file" id="input-photo" accept="image/*, .heic, .heif, .jpg, .jpeg, .png, .webp" style="opacity: 0; position: absolute; width: 1px; height: 1px; pointer-events: none; z-index: -1;">
     <input type="file" id="input-video" accept="video/*, .mp4, .mov, .webm, .m4v" style="opacity: 0; position: absolute; width: 1px; height: 1px; pointer-events: none; z-index: -1;">
+    <input type="file" id="input-audio" accept="audio/*, .mp3, .wav, .m4a, .ogg, .aac, .flac" style="opacity: 0; position: absolute; width: 1px; height: 1px; pointer-events: none; z-index: -1;">
 
     <div class="preview-card" id="preview-card" style="cursor: pointer;">
       <div class="scan-laser-line" id="scan-laser"></div>
 
+      <!-- Fotoğraf / Video Yükleme Alanı -->
       <div class="upload-placeholder" id="upload-placeholder">
         <div class="upload-icon-circle">
           <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
@@ -92,6 +106,31 @@
         <div>
           <div style="font-weight: 700; font-size: 15px; margin-bottom: 4px;" id="t-upload-title">Medyayı Seçmek İçin Dokunun</div>
           <div style="font-size: 12px; color: var(--text-muted);" id="t-upload-sub">veya dosyayı buraya sürükleyip bırakın</div>
+        </div>
+      </div>
+
+      <!-- Ses / Şarkı Canlı Dinleme ve Kayıt Paneli -->
+      <div class="audio-container" id="audio-container" style="display: none;">
+        <div class="audio-mic-wrapper">
+          <button class="btn-mic-pulse" id="btn-mic-listen" title="Dinlemeye Başla">
+            <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          </button>
+        </div>
+
+        <div class="audio-status-info">
+          <div class="audio-status-title" id="audio-status-title">Şarkıyı veya Sesi Dinletin</div>
+          <div class="audio-timer" id="audio-timer" style="display: none;">00:00</div>
+          <div class="audio-status-sub" id="audio-status-sub">Mikrofonla ortamdaki şarkıyı dinlemek için dokunun</div>
+        </div>
+
+        <canvas id="audio-waveform" class="audio-waveform-canvas" width="320" height="60" style="display: none;"></canvas>
+
+        <div class="audio-playback-card" id="audio-playback-card" style="display: none;">
+          <audio id="audio-player" controls style="width: 100%; height: 42px; margin-top: 8px;"></audio>
+        </div>
+
+        <div class="audio-file-upload-link" id="audio-file-upload-link">
+          <span>veya</span> <a href="javascript:void(0)" id="link-upload-audio">Ses Dosyası Seçin (MP3, WAV)</a>
         </div>
       </div>
 
