@@ -246,6 +246,10 @@ header {
   width: 100%;
 }
 
+.btn-3d * {
+  pointer-events: none;
+}
+
 .btn-3d-shadow {
   position: absolute;
   top: 0;
@@ -505,7 +509,8 @@ header {
   box-shadow: 0 0 45px rgba(16, 185, 129, 0.7);
 }
 
-.btn-mic-pulse.recording {
+.btn-mic-pulse.recording,
+.btn-mic-pulse.listening {
   background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
   box-shadow: 0 0 35px rgba(239, 68, 68, 0.7);
   animation: micPulseRecord 1.2s infinite ease-in-out;
@@ -580,6 +585,10 @@ header {
   padding: 0;
   cursor: pointer;
   margin-bottom: 24px;
+}
+
+.btn-control-3d * {
+  pointer-events: none;
 }
 
 .btn-control-edge {

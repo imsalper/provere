@@ -257,19 +257,60 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Açık dosya seçici
-function triggerFilePicker(e) {
-  if (e) {
+function triggerFilePicker(mode, e) {
+  if (e && typeof e.stopPropagation === 'function') {
     e.stopPropagation();
   }
+  const targetMode = mode || currentMode;
   let inputId = 'input-photo';
-  if (currentMode === 'video') inputId = 'input-video';
-  else if (currentMode === 'audio') inputId = 'input-audio';
+  if (targetMode === 'video') inputId = 'input-video';
+  else if (targetMode === 'audio') inputId = 'input-audio';
 
   const input = document.getElementById(inputId);
   if (input) {
-    input.value = '';
-    input.click();
+    try {
+      input.click();
+    } catch (err) {
+      console.warn("Dosya seçici açılamadı:", err);
+    }
   }
+}
+
+// Global button click dispatchers
+function handleModeBtnClick(mode, e) {
+  if (e && typeof e.stopPropagation === 'function') {
+    e.stopPropagation();
+  }
+  selectMode(mode, mode !== 'audio');
+}
+
+function handlePreviewCardClick(e) {
+  if (currentMode === 'audio') return;
+  if (e && e.target && (e.target.closest('#btn-clear') || e.target.closest('#btn-control') || e.target.closest('.preview-element') || e.target.closest('#audio-container'))) {
+    return;
+  }
+  triggerFilePicker(currentMode, e);
+}
+
+function handleControlBtnClick(e) {
+  if (e && typeof e.stopPropagation === 'function') {
+    e.stopPropagation();
+  }
+  if (currentMode === 'audio') {
+    if (recordedAudioBase64) {
+      startAudioAnalysis(recordedAudioBase64, 'audio/wav');
+    } else {
+      toggleAudioListening(e);
+    }
+    return;
+  }
+
+  if (!selectedFile) {
+    triggerFilePicker(currentMode, e);
+    return;
+  }
+
+  startAnalysis();
 }
 
 // Setup Events
@@ -279,22 +320,13 @@ function setupEventListeners() {
   const btnAudio = document.getElementById('mode-audio-btn');
 
   if (btnPhoto) {
-    btnPhoto.addEventListener('click', (e) => {
-      e.stopPropagation();
-      selectMode('photo', true);
-    });
+    btnPhoto.addEventListener('click', (e) => handleModeBtnClick('photo', e));
   }
   if (btnVideo) {
-    btnVideo.addEventListener('click', (e) => {
-      e.stopPropagation();
-      selectMode('video', true);
-    });
+    btnVideo.addEventListener('click', (e) => handleModeBtnClick('video', e));
   }
   if (btnAudio) {
-    btnAudio.addEventListener('click', (e) => {
-      e.stopPropagation();
-      selectMode('audio', false);
-    });
+    btnAudio.addEventListener('click', (e) => handleModeBtnClick('audio', e));
   }
 
   const inputPhoto = document.getElementById('input-photo');
@@ -315,31 +347,27 @@ function setupEventListeners() {
   if (btnMic) {
     btnMic.addEventListener('click', (e) => {
       e.stopPropagation();
-      toggleAudioListening();
+      toggleAudioListening(e);
     });
   }
   const linkUploadAudio = document.getElementById('link-upload-audio');
   if (linkUploadAudio) {
     linkUploadAudio.addEventListener('click', (e) => {
       e.stopPropagation();
-      triggerFilePicker(e);
+      triggerFilePicker('audio', e);
     });
   }
 
   const previewCard = document.getElementById('preview-card');
   if (previewCard) {
-    previewCard.addEventListener('click', (e) => {
-      if (currentMode === 'audio') return; // Do not open image picker in audio mode
-      if (e.target.closest('#btn-clear') || e.target.closest('#btn-control') || e.target.closest('.preview-element')) return;
-      triggerFilePicker(e);
-    });
+    previewCard.addEventListener('click', (e) => handlePreviewCardClick(e));
   }
 
   const btnClear = document.getElementById('btn-clear');
   if (btnClear) btnClear.addEventListener('click', clearSelectedMedia);
 
   const btnControl = document.getElementById('btn-control');
-  if (btnControl) btnControl.addEventListener('click', startAnalysis);
+  if (btnControl) btnControl.addEventListener('click', (e) => handleControlBtnClick(e));
 
   document.addEventListener('click', (e) => {
     const dropdown = document.querySelector('.lang-dropdown-wrapper');
@@ -396,6 +424,10 @@ window.selectMode = selectMode;
 window.triggerFilePicker = triggerFilePicker;
 window.clearSelectedMedia = clearSelectedMedia;
 window.startAnalysis = startAnalysis;
+window.handleModeBtnClick = handleModeBtnClick;
+window.handlePreviewCardClick = handlePreviewCardClick;
+window.handleControlBtnClick = handleControlBtnClick;
+window.toggleAudioListening = toggleAudioListening;
 
 // Language Switcher
 function toggleLangMenu() {

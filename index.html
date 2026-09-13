@@ -57,7 +57,7 @@
     </div>
 
     <div class="buttons-grid">
-      <button class="btn-3d btn-photo active" id="mode-photo-btn">
+      <button class="btn-3d btn-photo active" id="mode-photo-btn" onclick="handleModeBtnClick('photo', event)">
         <span class="btn-3d-shadow"></span>
         <span class="btn-3d-edge"></span>
         <span class="btn-3d-front">
@@ -69,7 +69,7 @@
         </span>
       </button>
 
-      <button class="btn-3d btn-video" id="mode-video-btn">
+      <button class="btn-3d btn-video" id="mode-video-btn" onclick="handleModeBtnClick('video', event)">
         <span class="btn-3d-shadow"></span>
         <span class="btn-3d-edge"></span>
         <span class="btn-3d-front">
@@ -81,7 +81,7 @@
         </span>
       </button>
 
-      <button class="btn-3d btn-audio" id="mode-audio-btn">
+      <button class="btn-3d btn-audio" id="mode-audio-btn" onclick="handleModeBtnClick('audio', event)">
         <span class="btn-3d-shadow"></span>
         <span class="btn-3d-edge"></span>
         <span class="btn-3d-front">
@@ -94,11 +94,11 @@
       </button>
     </div>
 
-    <input type="file" id="input-photo" accept="image/*, .heic, .heif, .jpg, .jpeg, .png, .webp" style="opacity: 0; position: absolute; width: 1px; height: 1px; pointer-events: none; z-index: -1;">
-    <input type="file" id="input-video" accept="video/*, .mp4, .mov, .webm, .m4v" style="opacity: 0; position: absolute; width: 1px; height: 1px; pointer-events: none; z-index: -1;">
-    <input type="file" id="input-audio" accept="audio/*, .mp3, .wav, .m4a, .ogg, .aac, .flac" style="opacity: 0; position: absolute; width: 1px; height: 1px; pointer-events: none; z-index: -1;">
+    <input type="file" id="input-photo" accept="image/*,.heic,.heif,.jpg,.jpeg,.png,.webp" style="position: fixed; top: -2000px; left: -2000px; opacity: 0;">
+    <input type="file" id="input-video" accept="video/*,.mp4,.mov,.webm,.m4v" style="position: fixed; top: -2000px; left: -2000px; opacity: 0;">
+    <input type="file" id="input-audio" accept="audio/*,.mp3,.wav,.m4a,.ogg,.aac,.flac" style="position: fixed; top: -2000px; left: -2000px; opacity: 0;">
 
-    <div class="preview-card" id="preview-card" style="cursor: pointer;">
+    <div class="preview-card" id="preview-card" onclick="handlePreviewCardClick(event)" style="cursor: pointer;">
       <div class="scan-laser-line" id="scan-laser"></div>
 
       <!-- Fotoğraf / Video Yükleme Alanı -->
@@ -115,7 +115,7 @@
       <!-- Ses / Şarkı Canlı Dinleme ve Kayıt Paneli -->
       <div class="audio-container" id="audio-container" style="display: none;">
         <div class="audio-mic-wrapper">
-          <button class="btn-mic-pulse" id="btn-mic-listen" title="Dinlemeye Başla">
+          <button class="btn-mic-pulse" id="btn-mic-listen" onclick="toggleAudioListening(event)" title="Dinlemeye Başla">
             <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
           </button>
         </div>
@@ -133,7 +133,7 @@
         </div>
 
         <div class="audio-file-upload-link" id="audio-file-upload-link">
-          <span>veya</span> <a href="javascript:void(0)" id="link-upload-audio">Ses Dosyası Seçin (MP3, WAV)</a>
+          <span>veya</span> <a href="javascript:void(0)" id="link-upload-audio" onclick="triggerFilePicker('audio', event)">Ses Dosyası Seçin (MP3, WAV)</a>
         </div>
       </div>
 
@@ -147,7 +147,7 @@
       </div>
     </div>
 
-    <button class="btn-control-3d" id="btn-control" disabled>
+    <button class="btn-control-3d" id="btn-control" onclick="handleControlBtnClick(event)">
       <span class="btn-control-edge"></span>
       <span class="btn-control-front">
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
