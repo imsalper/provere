@@ -1,4 +1,4 @@
-// Provere — AI vs Real Media Forensics Engine
+İİ// Provere — AI vs Real Media Forensics Engine
 // Sürüm: 2026.09.13 (Ticari Seviye Adli Bilişim & Donanım Doğrulama Motoru)
 // GÜNCELLEME 1: API anahtarı artık istemcide değil, Cloudflare Worker proxy'sinde saklanıyor.
 // GÜNCELLEME 2: Eksik triggerFilePicker() fonksiyonu eklendi (mobilde dosya seçme çalışmıyordu).
@@ -1343,29 +1343,27 @@ ${hardwareProof}
 
 KATI VE TAVİZSİZ ADLİ İNCELEME KURALLARI:
 
-1. YAPAY ZEKA SENTEZİ, MONTAJI VEYA INPAINTING TESPİTİ (AI - KESİN):
-   Aşağıdaki belirtilerden HERHANGİ BİRİ varsa görsel KESİNLİKLE YAPAY ZEKA (AI) olarak etiketlenmeli ve ai_probability %88-%99 arasında verilmelidir:
-   - KIYAFET DEĞİŞTİRME / KOSTÜM GİYDİRME / INPAINTING / ABSÜRT MONTAJ:
-     * Gerçek bir insanın üzerine veya üretilen bir karaktere yapay zeka ile tarihi/kurgusal kıyafet (örneğin Osmanlı Yeniçerisi kıyafeti, zırh, kaftan, börk, serpuş, kılıç vb.) veya sıra dışı kostüm (örneğin dükkan tezgahında dalgıç kıyafeti, paletler, ördek simit, zıpkın) giydirilmesi, yüz veya kıyafet montajı.
-     * Boyun, yaka, omuz, bacak ve ayak temaslarında maske kaynaşması izleri (mask blending artifacts), ten ile kumaşın mantıksız birleşimi, paletlerin/ayakların zeminle ve eşyalarla fiziksel olmayan difüzyon kaynaşması.
-     * Başlık/kıyafet veya objeler üzerindeki ışık açısı ile çevrenin ışık uyumsuzluğu.
-   - METİN VE ETİKET HALÜSİNASYONLARI:
-     * Arka plan raflarındaki kutularda, etiketlerde veya ekrandaki pencerelerde okunamayan, bozuk semboller ve difüzyon harf deformasyonları.
-   - TARİHİ VE KURGUSAL RENDERLAR:
-     * Günümüz modern 4K stüdyo/sinematik netliğinde ve ışıklandırmasında Osmanlı Yeniçerisi, şövalyeler, tarihi savaşçılar veya mitolojik karakterler.
-   - HAYVAN VE DOĞA GÖRSELLERİ:
-     * Yapay zeka ile üretilmiş ördek, kedi, kuş vb. hayvanlar; tüylerde matematiksel aşırı simetri ve kusursuz dizilim, sentetik parıldayan göz bebekleri, yapay su dalgaları veya pürüzsüz difüzyon göletleri.
-   - DİFÜZYON IŞIĞI VE PİKSEL İZLERİ:
-     * Homojen ve gerçek dışı 'volumetric' difüzyon ışığı, arkadan vuran yapay sinematik rim light, porselen gibi pürüzsüz ama yapay mikro-doku simülasyonu.
-   - EKRAN GÖRÜNTÜSÜ / SCREENSHOT YANILSAMASINA DİKKAT:
-     * Bir görselin ekran görüntüsü (screenshot) olması veya telefondan/ekrandan kaydedilmiş olması, içeriğinin gerçek olduğu anlamına GELMEZ! Ekrandaki ana görsel yapay zeka ile üretilmiş veya giydirilmişse karar KESİNLİKLE YAPAY ZEKA (AI) olmalıdır.
+1. YAPAY ZEKA SENTEZİ, MONTAJI VEYA INPAINTING TESPİTİ (AI):
+Aşağıdaki BEŞ bağımsız adli boyutu TEK TEK değerlendir, her birinde somut kanıt ara (varsayıma değil gözleme dayan):
 
-2. TAMAMEN GERÇEK VE DOĞAL KAMERA ÇEKİMİ (REAL):
-   - Fiziksel kamera lensiyle doğal ortamda çekilmiş, üzerinde HİÇBİR yapay zeka kostümü, inpainting, difüzyon veya sentetik montaj bulunmayan saf gerçek fotoğraflar (günlük hayatta çekilmiş oda, sokak, gerçek sıradan insanlar, belgeler).
-   - Gerçek fiziksel optik kusurlar, sensör foton gürültüsü, doğal gölge dağılımı.
-   - ai_probability %1 ile %12 arasında olmalı, verdict_type: 'real'.
-
-YANITINI SADECE VE SADECE AŞAĞIDAKİ GEÇERLİ JSON FORMATINDA VER (başka hiçbir metin ekleme):
+   A. IŞIK VE GÖLGE TUTARLILIĞI: Sahnedeki tüm nesnelerin gölgeleri aynı ışık kaynağı yönü, sertliği ve rengiyle uyumlu mu? Birden fazla çelişkili veya fiziksel olarak imkansız ışık kaynağı var mı?
+      B. DOKU VE YÜZEY DETAYI: Cilt gözenekleri, kumaş dokusu, saç telleri gibi ince detaylarda doğal düzensizlik var mı, yoksa "aşırı pürüzsüz / plastik" bir görünüm mü hakim? Yakın plan detaylarda difüzyon modellerine özgü doku kaybı var mı?
+         C. YANSIMA FİZİĞİ: Gözbebeklerinde, gözlüklerde, camlarda, metal veya parlak yüzeylerdeki yansımalar ortamla ve birbirleriyle tutarlı mı? Eksik, simetrik-hatalı veya mantıksız mı?
+            D. TEKRAR EDEN DESEN VE ANATOMİ: Arka plandaki raflar, duvar kağıdı, kumaş desenleri gibi tekrar eden örüntülerde bozulma veya mantıksız tekrar var mı? Parmak sayısı, eklem açıları, kulak/diş/göz simetrisi gibi ince anatomik detaylarda hata var mı?
+               E. METİN VE OBJE BÜTÜNLÜĞÜ: Arka plandaki etiket, kutu, ekran veya tabelalarda difüzyon modellerine özgü bozuk semboller veya okunamayan harf deformasyonları var mı? Bir nesnenin vücutla veya zeminle teması fiziksel olarak tutarsız mı (maske kaynaşması izleri, ten-kumaş mantıksız birleşimi)?
+               
+                  KARAR KURALI:
+                     - Yukarıdaki 5 boyuttan HİÇBİRİNDE somut anomali yoksa: ai_probability %1-%12, verdict_type: 'real'.
+                        - Sadece 1 boyutta hafif ve belirsiz bir işaret varsa: ai_probability %15-%35 arası ver, verdict_type: 'real' (gerçek fotoğraflarda da nadiren küçük optik tuhaflıklar olabilir, tek başına yetersiz kanıttır).
+                           - 2 veya daha fazla boyutta net, somut anomali varsa: ai_probability %60-%99 arası ver, verdict_type: 'ai'.
+                              - EKRAN GÖRÜNTÜSÜ / SCREENSHOT YANILSAMASINA DİKKAT: Bir görselin ekran görüntüsü olması veya telefondan/ekrandan kaydedilmiş olması, içeriğinin gerçek olduğu anlamına GELMEZ! Ekrandaki ana görsel yapay zeka ile üretilmiş veya giydirilmişse karar KESİNLİKLE YAPAY ZEKA (AI) olmalıdır.
+                                 - ÖNEMLİ: Kararını SADECE görselde gerçekten gözlemlediğin somut teknik kanıtlara dayandır. Sahnenin "sıra dışı", "komik" veya "beklenmedik" görünmesi (örneğin bir dükkanda şaka amaçlı garip bir kıyafet veya obje ile poz verilmesi) TEK BAŞINA yapay zeka kanıtı DEĞİLDİR — gerçek insanlar da eğlence amaçlı sıra dışı pozlar verir ve gerçek dükkanlarda gerçek ürünlerle şaka yapılabilir. Sadece yukarıdaki 5 teknik boyutta somut, gözlemlenebilir anomali varsa AI kararı ver.
+                                 
+                                 2. TAMAMEN GERÇEK VE DOĞAL KAMERA ÇEKİMİ (REAL):
+                                    - Fiziksel kamera lensiyle doğal ortamda çekilmiş, üzerinde HİÇBİR yapay zeka kostümü, inpainting, difüzyon veya sentetik montaj bulunmayan saf gerçek fotoğraflar (günlük hayatta çekilmiş oda, sokak, dükkan, gerçek sıradan insanlar, eğlenceli/şaka amaçlı pozlar dahil, belgeler).
+                                       - Gerçek fiziksel optik kusurlar, sensör foton gürültüsü, doğal gölge dağılımı.
+                                          - ai_probability %1 ile %12 arasında olmalı, verdict_type: 'real'.
+                                          YANITINI SADECE VE SADECE AŞAĞIDAKİ GEÇERLİ JSON FORMATINDA VER (başka hiçbir metin ekleme):
 {
   "ai_probability": 96,
   "verdict_type": "ai",
