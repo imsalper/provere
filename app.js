@@ -1,4 +1,4 @@
-İİ// Provere — AI vs Real Media Forensics Engine
+// Provere — AI vs Real Media Forensics Engine
 // Sürüm: 2026.09.13 (Ticari Seviye Adli Bilişim & Donanım Doğrulama Motoru)
 // GÜNCELLEME 1: API anahtarı artık istemcide değil, Cloudflare Worker proxy'sinde saklanıyor.
 // GÜNCELLEME 2: Eksik triggerFilePicker() fonksiyonu eklendi (mobilde dosya seçme çalışmıyordu).
@@ -1389,7 +1389,7 @@ Aşağıdaki BEŞ bağımsız adli boyutu TEK TEK değerlendir, her birinde somu
                         - Sadece 1 boyutta hafif ve belirsiz bir işaret varsa: ai_probability %15-%35 arası ver, verdict_type: 'real' (gerçek fotoğraflarda da nadiren küçük optik tuhaflıklar olabilir, tek başına yetersiz kanıttır).
                            - 2 veya daha fazla boyutta net, somut anomali varsa: ai_probability %60-%99 arası ver, verdict_type: 'ai'.
                               - EKRAN GÖRÜNTÜSÜ / SCREENSHOT YANILSAMASINA DİKKAT: Bir görselin ekran görüntüsü olması veya telefondan/ekrandan kaydedilmiş olması, içeriğinin gerçek olduğu anlamına GELMEZ! Ekrandaki ana görsel yapay zeka ile üretilmiş veya giydirilmişse karar KESİNLİKLE YAPAY ZEKA (AI) olmalıdır.
-                                 - ÖNEMLİ: Kararını SADECE görselde gerçekten gözlemlediğin somut teknik kanıtlara dayandır. Sahnenin "sıra dışı", "komik" veya "beklenmedik" görünmesi (örneğin bir dükkanda şaka amaçlı garip bir kıyafet veya obje ile poz verilmesi) TEK BAŞINA yapay zeka kanıtı DEĞİLDİR — gerçek insanlar da eğlence amaçlı sıra dışı pozlar verir ve gerçek dükkanlarda gerçek ürünlerle şaka yapılabilir. Sadece yukarıdaki 5 teknik boyutta somut, gözlemlenebilir anomali varsa AI kararı ver.
+                              - ÖNEMLİ: Bir görselde kıyafet değiştirme, inpainting veya obje montajı (örneğin dükkan tezgahında duran birine dalgıç kıyafeti, paletler, ördek simit, zıpkın veya yeniçeri kostümü eklenmesi) yapılmışsa bu KESİNLİKLE YAPAY ZEKA (AI) olarak etiketlenmelidir (%85-%99). Ayakların/paletlerin zemin ve nesnelerle temasındaki fiziksel olmayan maskeleme izlerine, ten-kumaş birleşimine ve arka plandaki difüzyon bozulmalarına dikkat et.
                                  
                                  2. TAMAMEN GERÇEK VE DOĞAL KAMERA ÇEKİMİ (REAL):
                                     - Fiziksel kamera lensiyle doğal ortamda çekilmiş, üzerinde HİÇBİR yapay zeka kostümü, inpainting, difüzyon veya sentetik montaj bulunmayan saf gerçek fotoğraflar (günlük hayatta çekilmiş oda, sokak, dükkan, gerçek sıradan insanlar, eğlenceli/şaka amaçlı pozlar dahil, belgeler).
