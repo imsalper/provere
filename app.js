@@ -1345,10 +1345,12 @@ KATI VE TAVİZSİZ ADLİ İNCELEME KURALLARI:
 
 1. YAPAY ZEKA SENTEZİ, MONTAJI VEYA INPAINTING TESPİTİ (AI - KESİN):
    Aşağıdaki belirtilerden HERHANGİ BİRİ varsa görsel KESİNLİKLE YAPAY ZEKA (AI) olarak etiketlenmeli ve ai_probability %88-%99 arasında verilmelidir:
-   - KIYAFET DEĞİŞTİRME / KOSTÜM GİYDİRME / INPAINTING:
-     * Gerçek bir insanın üzerine veya üretilen bir karaktere yapay zeka ile tarihi/kurgusal kıyafet (örneğin Osmanlı Yeniçerisi kıyafeti, zırh, kaftan, börk, serpuş, kılıç vb.) giydirilmesi veya yüz/kıyafet montajı.
-     * Boyun, yaka, omuz ve saç diplerinde maske kaynaşması izleri (mask blending artifacts), ten ile kumaşın mantıksız birleşimi, kumaş dikişlerinin fiziksel olmayan difüzyon kaynaşması.
-     * Başlık/kıyafet üzerindeki ışık açısı ile yüzdeki ışığın uyumsuzluğu.
+   - KIYAFET DEĞİŞTİRME / KOSTÜM GİYDİRME / INPAINTING / ABSÜRT MONTAJ:
+     * Gerçek bir insanın üzerine veya üretilen bir karaktere yapay zeka ile tarihi/kurgusal kıyafet (örneğin Osmanlı Yeniçerisi kıyafeti, zırh, kaftan, börk, serpuş, kılıç vb.) veya sıra dışı kostüm (örneğin dükkan tezgahında dalgıç kıyafeti, paletler, ördek simit, zıpkın) giydirilmesi, yüz veya kıyafet montajı.
+     * Boyun, yaka, omuz, bacak ve ayak temaslarında maske kaynaşması izleri (mask blending artifacts), ten ile kumaşın mantıksız birleşimi, paletlerin/ayakların zeminle ve eşyalarla fiziksel olmayan difüzyon kaynaşması.
+     * Başlık/kıyafet veya objeler üzerindeki ışık açısı ile çevrenin ışık uyumsuzluğu.
+   - METİN VE ETİKET HALÜSİNASYONLARI:
+     * Arka plan raflarındaki kutularda, etiketlerde veya ekrandaki pencerelerde okunamayan, bozuk semboller ve difüzyon harf deformasyonları.
    - TARİHİ VE KURGUSAL RENDERLAR:
      * Günümüz modern 4K stüdyo/sinematik netliğinde ve ışıklandırmasında Osmanlı Yeniçerisi, şövalyeler, tarihi savaşçılar veya mitolojik karakterler.
    - HAYVAN VE DOĞA GÖRSELLERİ:
