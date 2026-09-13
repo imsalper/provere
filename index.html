@@ -174,6 +174,55 @@
 
       <div class="signals-list" id="signals-list"></div>
 
+      <!-- Neden Bu Sonuç? (Explainable AI / Breakdown Paneli) -->
+      <div class="breakdown-panel" id="breakdown-panel" style="display: none;">
+        <div class="breakdown-header">
+          <span class="breakdown-icon">🔬</span>
+          <span id="t-breakdown-title">NEDEN BU SONUÇ? (ADLİ ANALİZ KIRILIMI)</span>
+        </div>
+
+        <div class="breakdown-steps">
+          <!-- 1. Metadata Durumu -->
+          <div class="breakdown-step" id="breakdown-step-meta">
+            <div class="breakdown-step-top">
+              <div class="breakdown-step-badge" id="breakdown-meta-badge">1. Metadata Durumu</div>
+              <span class="breakdown-tag" id="breakdown-meta-tag">Taranıyor</span>
+            </div>
+            <div class="breakdown-step-val" id="breakdown-meta-val">Orijinal Kamera vs. AI Yazılımı</div>
+            <div class="breakdown-step-desc" id="breakdown-meta-desc">EXIF, IPTC ve C2PA Content Credentials taranıyor...</div>
+          </div>
+
+          <!-- 2. Piksel / Doku Tutarlılığı -->
+          <div class="breakdown-step" id="breakdown-step-noise">
+            <div class="breakdown-step-top">
+              <div class="breakdown-step-badge" id="breakdown-noise-badge">2. Piksel & Doku</div>
+              <span class="breakdown-tag" id="breakdown-noise-tag">Analiz Ediliyor</span>
+            </div>
+            <div class="breakdown-step-val" id="breakdown-noise-val">Doğal Sensör Gürültüsü / Sentetik Pürüzsüzlük</div>
+            <div class="breakdown-step-desc" id="breakdown-noise-desc">Sensör foton gürültüsü ve yerel kontrast varyansı hesaplanıyor...</div>
+            <div class="breakdown-meter-wrap">
+              <div class="breakdown-meter-bar">
+                <div class="breakdown-meter-fill" id="breakdown-noise-fill" style="width: 50%;"></div>
+              </div>
+              <div class="breakdown-meter-labels">
+                <span id="t-smooth-label">Sentetik Pürüzsüzlük</span>
+                <span id="t-noise-label">Doğal Sensör Gürültüsü</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Frekans / Artefakt Skoru -->
+          <div class="breakdown-step" id="breakdown-step-freq">
+            <div class="breakdown-step-top">
+              <div class="breakdown-step-badge" id="breakdown-freq-badge">3. Frekans & Spektrum</div>
+              <span class="breakdown-tag" id="breakdown-freq-tag">Değerlendirildi</span>
+            </div>
+            <div class="breakdown-step-val" id="breakdown-freq-val">Frekans ve Artefakt Seviyesi</div>
+            <div class="breakdown-step-desc" id="breakdown-freq-desc">Yüksek frekans artefaktları ve difüzyon sınır geçişleri incelendi.</div>
+          </div>
+        </div>
+      </div>
+
       <div id="location-box" class="location-box" style="display: none;">
         <div class="location-badge">
           <span class="location-icon">📍</span>
@@ -182,7 +231,7 @@
         
         <div class="location-card-inner">
           <div class="location-details">
-            <div id="location-desc" class="location-desc-title">İstanbul, Türkiye</div>
+            <div id="location-desc" class="location-desc-title">Konum Verisi Bulunamadı / Doğrulanamadı</div>
             <div id="location-coords" class="location-coords" style="display: none;"></div>
           </div>
           <a id="btn-open-map" href="#" target="_blank" rel="noopener noreferrer" class="btn-map-link" style="display: none;">
@@ -198,7 +247,7 @@
     </footer>
   </div>
 
-  <script src="app.js?v=20260913_1209"></script>
+  <script src="app.js?v=20260913_1325"></script>
   <script>
     // Mevcut service worker kayıtlarını ve cache'leri temizle
     if ('serviceWorker' in navigator) {
