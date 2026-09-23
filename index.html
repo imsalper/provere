@@ -249,17 +249,11 @@
 
   <script src="app.js?v=20260913_1350"></script>
   <script>
-    // Mevcut service worker kayıtlarını ve cache'leri temizle
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then((registrations) => {
-        for (const registration of registrations) {
-          registration.unregister();
-        }
-      });
-    }
-    if ('caches' in window) {
-      caches.keys().then((keys) => {
-        keys.forEach((key) => caches.delete(key));
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then((reg) => console.log('Provere SW registered:', reg.scope))
+          .catch((err) => console.log('Provere SW registration failed:', err));
       });
     }
   </script>
