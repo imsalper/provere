@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.imsaapp.provere",
+        "sha256_cert_fingerprints": ["31:C6:DB:95:69:C5:7D:3E:63:A7:F2:74:8F:B6:78:C7:84:DE:16:9F:80:11:27:E9:A6:D1:C5:A0:E5:E5:45:CF"]
+      }
+    }]
